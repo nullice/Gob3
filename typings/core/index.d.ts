@@ -21,7 +21,7 @@ export interface GobProxy {
     [propName: string]: any;
 }
 interface GobFactory {
-    (this: any, object: any, options?: object): GobProxy;
+    (this: any, object?: any, options?: object): GobProxy;
     default: {
         options: GobOptions;
         cloneDeep: Function;
