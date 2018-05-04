@@ -1,8 +1,7 @@
 // Created by nullice on 2018/04/17 - 14:39 
 
 import giveHandler from "./giveHandler"
-import StimuliBus from "./StimuliBus/index"
-import {inspect} from "util"
+import StimuliBus from "./StimuliBus/StimuliBus"
 import cloneDeep from "lodash/cloneDeep"
 const GOB_CORE_NAME = "[Gob Core]"
 
@@ -48,6 +47,7 @@ export interface GobProxy
     ["[Gob Core]"]?: GobCore,
     $get?: (path: string | string[]) => any,
     $set?: (path: string | string[], value: any) => Boolean,
+    $delete?: (path: string | string[]) => Boolean,
 
     [propName: string]: any;
 }

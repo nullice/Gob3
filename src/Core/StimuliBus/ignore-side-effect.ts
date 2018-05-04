@@ -1,7 +1,7 @@
 // Created by nullice on 2018/05/02 - 14:34 
 
 
-import {HandlerContext} from "@/core/StimuliBus/index"
+import {HandlerContext} from "@/Core/StimuliBus/StimuliBus"
 
 
 interface StimuliPerson

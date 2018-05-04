@@ -1,5 +1,7 @@
-import {Type as rcType, Object as rcObject} from "richang.js/dist/RichangEs.js"
 import giveHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/core/giveHandler"
+import util from "@/Util/Util"
+const rcType = util.rcType
+
 
 
 /**

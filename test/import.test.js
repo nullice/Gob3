@@ -10,7 +10,8 @@ const UMD_PATH = "./../dist/" + LIB_NAME + ".umd.js"
 
 
 import lib_es from "./../dist/Gob.es.js"
-const  rc = require("richang.js/dist/RichangNode.js")
+
+const rc = require("richang.js/dist/RichangNode.js")
 
 let lib_cjs = require(CJS_PATH)
 let lib_umd = require(UMD_PATH)
@@ -23,17 +24,38 @@ const GOB_CORE_NAME = "[Gob Core]"
 test("import es.js", () =>
 {
     expect(typeof  (lib_es()[GOB_CORE_NAME])).toBe("object")
-
+    let gob = lib_es()
+    gob.a = {b: {c: {d: 123}}}
+    expect(gob.$get("a.b.c.d")).toBe(123)
+    gob.$delete("a.b.c.d")
+    expect(gob.$get("a.b.c.d")).toBe(undefined)
+    gob.$set("a.b.c.d",222)
+    expect(gob.$get("a.b.c.d")).toBe(222)
 })
 
 test("import cjs.js", () =>
 {
     expect(typeof  (lib_cjs()[GOB_CORE_NAME])).toBe("object")
+    let gob = lib_cjs()
+    gob.a = {b: {c: {d: 123}}}
+    expect(gob.$get("a.b.c.d")).toBe(123)
+    gob.$delete("a.b.c.d")
+    expect(gob.$get("a.b.c.d")).toBe(undefined)
+    gob.$set("a.b.c.d",222)
+    expect(gob.$get("a.b.c.d")).toBe(222)
 })
 
 test("import umd.js", () =>
 {
     expect(typeof  (lib_umd()[GOB_CORE_NAME])).toBe("object")
+
+    let gob = lib_umd()
+    gob.a = {b: {c: {d: 123}}}
+    expect(gob.$get("a.b.c.d")).toBe(123)
+    gob.$delete("a.b.c.d")
+    expect(gob.$get("a.b.c.d")).toBe(undefined)
+    gob.$set("a.b.c.d",222)
+    expect(gob.$get("a.b.c.d")).toBe(222)
 })
 //
 // test("import bundle-node.js", () =>

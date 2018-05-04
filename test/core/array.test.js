@@ -1,8 +1,7 @@
 // Created by nullice on 2018/05/02 - 16:27
 
 
-import Gob from "./../../dist/Gob.umd.js"
-
+import Gob from "./../../src/index.js"
 const GOB_CORE_NAME = "[Gob Core]"
 
 describe("Array base", () =>

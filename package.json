@@ -31,13 +31,13 @@
     "clone-deep": "^4.0.0",
     "is-odd": "^2.0.0",
     "lodash": "^4.17.10",
-    "richang.js": "^4.5.1"
+    "richang.js": "^4.5.5"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.44",
     "@babel/core": "^7.0.0-beta.44",
     "@babel/plugin-external-helpers": "^7.0.0-beta.44",
-    "@babel/plugin-syntax-dynamic-import": "^7.0.0-beta.44",
+    "@babel/plugin-syntax-dynamic-import": "^7.0.0-beta.46",
     "@babel/plugin-transform-runtime": "^7.0.0-beta.44",
     "@babel/preset-env": "^7.0.0-beta.44",
     "@types/jest": "^22.2.3",
@@ -66,6 +66,9 @@
     "webpack-cli": "^2.0.12"
   },
   "jest": {
+    "moduleNameMapper": {
+      "@/(.*)": "<rootDir>/src/$1"
+    },
     "coveragePathIgnorePatterns": [
       "/node_modules/",
       "/dist/"
@@ -79,6 +82,9 @@
     "moduleDirectories": [
       "node_modules",
       "src"
+    ],
+    "transformIgnorePatterns": [
+      "/node_modules/(?!richang.js).+\\.js$"
     ],
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "moduleFileExtensions": [

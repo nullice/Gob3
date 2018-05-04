@@ -1,6 +1,7 @@
 // Created by nullice on 2018/04/17 - 17:55 
 
-import Gob from "./../../dist/Gob.umd.js"
+// import Gob from "./../../dist/Gob.umd.js"
+import Gob from "./../../src/index.js"
 
 
 describe("$get, $set", () =>

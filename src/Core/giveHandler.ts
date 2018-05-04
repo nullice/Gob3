@@ -1,5 +1,4 @@
-import {GobCore} from "@/core/index"
-import {Type as rcType, Object as rcObject} from "richang.js/dist/RichangEs.js"
+import {GobCore} from "@/Core/Core"
 
 export const GATE_PROXY_NAME = "[PROXY]"
 
@@ -86,7 +85,7 @@ function giveHandler(loaclData: any, localGate: any, fullPath: string[], state: 
     }
 
 
-    function $get(inPath: string[], origin: object | string | null = null)
+    function $get(inPath: string[]|string, origin: object | string | null = null)
     {
         let path = normalizePath(inPath)
         let nowFullPath = [...fullPath, ...path]
@@ -94,7 +93,7 @@ function giveHandler(loaclData: any, localGate: any, fullPath: string[], state: 
         return state.gobCore.stimuliBus.receptor("get", nowFullPath, undefined, origin)
     }
 
-    function $set(inPath: string[], value: any, origin: object | string | null = null)
+    function $set(inPath: string[]|string, value: any, origin: object | string | null = null)
     {
         let path = normalizePath(inPath)
         let nowFullPath = [...fullPath, ...path]
@@ -102,7 +101,7 @@ function giveHandler(loaclData: any, localGate: any, fullPath: string[], state: 
         return state.gobCore.stimuliBus.receptor("set", nowFullPath, value, origin)
     }
 
-    function $delete(inPath: string[], origin: object | string | null = null)
+    function $delete(inPath: string[]|string, origin: object | string | null = null)
     {
         let path = normalizePath(inPath)
         let nowFullPath = [...fullPath, ...path]

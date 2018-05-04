@@ -1,21 +1,22 @@
 // Created by nullice on 2018/04/17 - 17:55 
 
-import newGob from "./../../dist/Gob.umd.js"
+// import Gob from "./../../dist/Gob.umd.js"
+import Gob from "./../../src/index.js"
 
-var Gob = newGob
+
 const GOB_CORE_NAME = "[Gob Core]"
 
 
-test("newGob() is Gob3", () =>
+test("Gob() is Gob3", () =>
 {
-    let gob = newGob()
+    let gob = Gob()
     expect(typeof  gob[GOB_CORE_NAME]).toBe("object")
 })
 
 
 test("Set base type", () =>
 {
-    let gob = newGob()
+    let gob = Gob()
     let date = new Date()
     gob.a = 1
     gob.b = "string"
@@ -28,7 +29,7 @@ test("Set base type", () =>
 
 describe("Set object", () =>
 {
-    let gob = newGob()
+    let gob = Gob()
     let date = new Date()
     gob.a = "a"
     gob.b = "b"
@@ -161,7 +162,7 @@ describe("Set Cycle object", () =>
 
 describe("Delete ", () =>
 {
-    let gob = newGob()
+    let gob = Gob()
 
     test("Delete object", () =>
     {

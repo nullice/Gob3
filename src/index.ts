@@ -1,3 +1,3 @@
-import Gob from "./core/index"
+import Gob from "./Core/Core"
 export default Gob
 

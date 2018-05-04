@@ -1,4 +1,4 @@
-import { GobCore } from "@/core/index";
+import { GobCore } from "@/Core/Core";
 export declare const GATE_PROXY_NAME = "[PROXY]";
 export interface Gate {
     [GATE_PROXY_NAME]?: object;

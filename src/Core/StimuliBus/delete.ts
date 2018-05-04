@@ -1,4 +1,7 @@
-import {Type as rcType, Object as rcObject} from "richang.js/dist/RichangEs.js"
+import util from "@/Util/Util"
+let rcType = util.rcType
+
+
 import giveHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/core/giveHandler"
 
 

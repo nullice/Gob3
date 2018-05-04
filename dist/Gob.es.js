@@ -54,7 +54,6 @@ function _nonIterableSpread() {
   throw new TypeError("Invalid attempt to spread non-iterable instance");
 }
 
-var GATE_PROXY_NAME = "[PROXY]";
 /**
  * 创建一个基于 path 的代理处理器
  * @param loaclData
@@ -1136,6 +1135,126 @@ var Cache = {
      */
 };
 
+var Util = {
+  rcType: TypeTYP,
+  rcObject: ObjectOBJ,
+  name: "util"
+};
+ //# sourceMappingURL=Util.js.map
+
+var GATE_PROXY_NAME$1 = "[PROXY]";
+/**
+ * 创建一个基于 path 的代理处理器
+ * @param loaclData
+ * @param {string[]} loaclpath
+ * @param {string[]} fullPath
+ * @param {{gobCore: GobCore; GOB_CORE_NAME: string}} state
+ * @returns {{set: (target: any, key: any, value: any) => boolean; get: (target: any, property: any) => (any)}}
+ */
+
+function giveHandler$1(loaclData, localGate, fullPath, state) {
+  return {
+    "set": function set(target, key, value) {
+      // 处理特殊属性 [Gob Core]
+      if (key == state.GOB_CORE_NAME) {
+        return true;
+      }
+
+      var nowFullPath = _toConsumableArray(fullPath).concat([key]);
+
+      var handlerContext = {
+        loaclData: loaclData,
+        localGate: localGate,
+        state: state
+      };
+      return state.gobCore.stimuliBus.receptor("set", nowFullPath, value, null, handlerContext);
+    },
+    "get": function get(target, key) {
+      // 处理特殊属性 [Gob Core]
+      if (key == state.GOB_CORE_NAME) {
+        return state.gobCore;
+      }
+
+      if (key == "$get") return $get;
+      if (key == "$set") return $set;
+      if (key == "$delete") return $delete;
+
+      var nowFullPath = _toConsumableArray(fullPath).concat([key]);
+
+      var handlerContext = {
+        loaclData: loaclData,
+        localGate: localGate,
+        state: state
+      };
+      return state.gobCore.stimuliBus.receptor("get", nowFullPath, undefined, null, handlerContext);
+    },
+    "deleteProperty": function deleteProperty(target, key) {
+      // 处理特殊属性 [Gob Core]
+      if (key == state.GOB_CORE_NAME) {
+        return true;
+      }
+
+      console.log("called: " + key);
+
+      var nowFullPath = _toConsumableArray(fullPath).concat([key]);
+
+      var handlerContext = {
+        loaclData: loaclData,
+        localGate: localGate,
+        state: state
+      };
+      return state.gobCore.stimuliBus.receptor("delete", nowFullPath, null, null, handlerContext);
+    }
+  };
+
+  function $get(inPath) {
+    var origin = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    var path = normalizePath$1(inPath);
+
+    var nowFullPath = _toConsumableArray(fullPath).concat(_toConsumableArray(path));
+
+    console.log("$get", nowFullPath);
+    return state.gobCore.stimuliBus.receptor("get", nowFullPath, undefined, origin);
+  }
+
+  function $set(inPath, value) {
+    var origin = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    var path = normalizePath$1(inPath);
+
+    var nowFullPath = _toConsumableArray(fullPath).concat(_toConsumableArray(path));
+
+    console.log("$set", nowFullPath, value);
+    return state.gobCore.stimuliBus.receptor("set", nowFullPath, value, origin);
+  }
+
+  function $delete(inPath) {
+    var origin = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    var path = normalizePath$1(inPath);
+
+    var nowFullPath = _toConsumableArray(fullPath).concat(_toConsumableArray(path));
+
+    console.log("$delete", nowFullPath);
+    return state.gobCore.stimuliBus.receptor("delete", nowFullPath, undefined, origin);
+  }
+}
+/**
+ * 规则化 path，让数组与字符串两种路径都可以用 ["a","b"], "a.b", "a\b\c", "a/b/c"
+ * @param {string[] | string} path
+ * @returns {string[]}
+ */
+
+
+function normalizePath$1(path) {
+  if (typeof path === "string") {
+    return path.split(/[\.\\/]/);
+  } else {
+    return path;
+  }
+}
+ //# sourceMappingURL=giveHandler.js.map
+
+var rcType = Util.rcType;
+var rcObject = Util.rcObject;
 /**
  * 收到 set 刺激后对 gob 实例进行的操作
  * @param {string[]} fullPath
@@ -1145,7 +1264,7 @@ var Cache = {
  */
 
 function set(fullPath, value, key, handlerContext) {
-  var valueType = TypeTYP.getType(value);
+  var valueType = rcType.getType(value);
   console.log("[set]", "fullPath:", fullPath, {
     valueType: valueType,
     key: key,
@@ -1158,7 +1277,7 @@ function set(fullPath, value, key, handlerContext) {
 
     creatGate(value, [key], fullPath, handlerContext); // 遍历值来创建 gate
 
-    ObjectOBJ.pathEach(value, function (item, path) {
+    rcObject.pathEach(value, function (item, path) {
       if (_typeof(item) === "object") {
         creatGate(item, [key].concat(_toConsumableArray(path)), _toConsumableArray(fullPath).concat(_toConsumableArray(path)), handlerContext);
       }
@@ -1182,11 +1301,11 @@ function set(fullPath, value, key, handlerContext) {
     if (cyclePath.length == 0) {
       cycleObject = handlerContext.localGate[key];
     } else {
-      cycleObject = ObjectOBJ.getObjectValueByNames(handlerContext.localGate, [key, cyclePath], null);
+      cycleObject = rcObject.getObjectValueByNames(handlerContext.localGate, [key, cyclePath], null);
     } // console.log("  [cycle cycleObject]", cycleObject)
 
 
-    ObjectOBJ.setObjectValueByNames(handlerContext.localGate, [key].concat(_toConsumableArray(path)), cycleObject);
+    rcObject.setObjectValueByNames(handlerContext.localGate, [key].concat(_toConsumableArray(path)), cycleObject);
   }
 }
 /**
@@ -1201,13 +1320,14 @@ function set(fullPath, value, key, handlerContext) {
 
 function creatGate(inData, targetPath, fullPath, handlerContext) {
   var gate = {};
-  var proxy = new Proxy(inData, giveHandler(inData, gate, fullPath, handlerContext.state));
-  gate[GATE_PROXY_NAME] = proxy;
-  ObjectOBJ.setObjectValueByNames(handlerContext.localGate, targetPath, gate);
+  var proxy = new Proxy(inData, giveHandler$1(inData, gate, fullPath, handlerContext.state));
+  gate[GATE_PROXY_NAME$1] = proxy;
+  rcObject.setObjectValueByNames(handlerContext.localGate, targetPath, gate);
   return gate;
 }
  //# sourceMappingURL=set.js.map
 
+var rcType$1 = Util.rcType;
 /**
  *
  * @param {string[]} fullPath
@@ -1225,13 +1345,13 @@ function get(fullPath, key, handlerContext) {
     key: key
   }); // 根据值属性处理读出值
 
-  var valueType = TypeTYP.getType(value);
+  var valueType = rcType$1.getType(value);
   console.log("  [get value]", value, valueType);
 
   if (valueType === "object" || valueType === "array") {
     console.log("  [find gates]", fullPath);
     var gate = handlerContext.localGate[key];
-    return gate[GATE_PROXY_NAME];
+    return gate[GATE_PROXY_NAME$1];
   }
 
   {
@@ -1241,6 +1361,7 @@ function get(fullPath, key, handlerContext) {
 }
  //# sourceMappingURL=get.js.map
 
+var rcType$2 = Util.rcType;
 /**
  * 收到 delete 刺激后对 gob 实例进行的操作
  * @param {string[]} fullPath
@@ -1250,7 +1371,7 @@ function get(fullPath, key, handlerContext) {
  */
 
 function del(fullPath, value, key, handlerContext) {
-  var valueType = TypeTYP.getType(value);
+  var valueType = rcType$2.getType(value);
   console.log("[del]", "fullPath:", fullPath, {
     key: key
   });
@@ -1307,6 +1428,7 @@ function _logLatest(stimuliType, path, loaclDataIsArray) {
 }
  //# sourceMappingURL=ignore-side-effect.js.map
 
+var rcObject$1 = Util.rcObject;
 /**
  * 刺激总线
  */
@@ -1359,7 +1481,7 @@ function () {
           {
             if (!handlerContext) {
               console.log("getObjectValueByNames", path);
-              return ObjectOBJ.getObjectValueByNames(this.gobCore.proxy, path, null);
+              return rcObject$1.getObjectValueByNames(this.gobCore.proxy, path, null);
             } else {
               return get(path, path[path.length - 1], handlerContext);
             }
@@ -1368,7 +1490,7 @@ function () {
         case "set":
           {
             if (!handlerContext) {
-              return ObjectOBJ.setObjectValueByNames(this.gobCore.proxy, path, value);
+              return rcObject$1.setObjectValueByNames(this.gobCore.proxy, path, value);
             } else {
               return set(path, value, path[path.length - 1], handlerContext);
             }
@@ -1377,7 +1499,7 @@ function () {
         case "delete":
           {
             if (!handlerContext) {
-              return ObjectOBJ.deleteObjectValueByNames(this.gobCore.proxy, path);
+              return rcObject$1.deleteObjectValueByNames(this.gobCore.proxy, path);
             } else {
               return del(path, value, path[path.length - 1], handlerContext);
             }
@@ -1458,6 +1580,7 @@ function () {
 
   return StimuliBus;
 }();
+ //# sourceMappingURL=StimuliBus.js.map
 
 /**
  * Removes all key-value entries from the list cache.
@@ -4015,6 +4138,7 @@ GobFactory.inspect = function (gob) {
     throw Error("Gob.inspect: param is not Gob3 Instance. :" + gob);
   }
 };
- //# sourceMappingURL=index.js.map
+
+//# sourceMappingURL=index.js.map
 
 export default GobFactory;

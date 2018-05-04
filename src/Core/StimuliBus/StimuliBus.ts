@@ -1,13 +1,15 @@
 // Created by nullice on 2018/04/24 - 15:05
 
-import {Type as rcType, Object as rcObject} from "richang.js/dist/RichangEs.js"
-import {GobState} from "@/core/giveHandler"
+import util from "@/Util/Util"
+let rcObject = util.rcObject
+
+import {GobState} from "@/Core/giveHandler"
 import set from "./set"
 import get from "./get"
 import del from "./delete"
 import IgnoreSideEffect from "./ignore-side-effect"
 
-import {GobCore} from "@/core/index"
+import {GobCore} from "@/Core/Core"
 
 export interface HandlerContext
 {

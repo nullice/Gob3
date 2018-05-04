@@ -1,4 +1,7 @@
-import {Type as rcType, Object as rcObject} from "richang.js/dist/RichangEs.js"
+import util from "@/Util/Util"
+const rcType = util.rcType
+const rcObject = util.rcObject
+
 import giveHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/core/giveHandler"
 
 
@@ -11,6 +14,7 @@ import giveHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/core/giveHan
  */
 function set(fullPath: string[], value: any, key: string, handlerContext: HandlerContext)
 {
+
     let valueType = rcType.getType(value)
     console.log("[set]", "fullPath:", fullPath, {valueType, key, value})
     if (valueType === "object" || valueType === "array")

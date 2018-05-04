@@ -4,7 +4,7 @@
 
 const PACKAGE_JSON = require("./package.json")
 const PACKAGE_NAME = PACKAGE_JSON.fullName
-const ENTRY = "./src/index.js"
+const ENTRY = "./src/index.ts"
 
 import babel from "rollup-plugin-babel"
 import typescript from "rollup-plugin-typescript2"

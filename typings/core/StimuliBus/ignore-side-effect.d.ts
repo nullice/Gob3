@@ -1,4 +1,4 @@
-import { HandlerContext } from "@/core/StimuliBus/index";
+import { HandlerContext } from "@/Core/StimuliBus/StimuliBus";
 /**
  * 刺激检查，忽略一些刺激不记录到 stimuliLog ，比如忽略数组添加成员时对 length 的 set
  * @param {string[]} path
