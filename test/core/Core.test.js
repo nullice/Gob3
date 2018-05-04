@@ -13,6 +13,25 @@ test("Gob() is Gob3", () =>
     expect(typeof  gob[GOB_CORE_NAME]).toBe("object")
 })
 
+test("Gob.inspect() ", () =>
+{
+    let gob = Gob()
+    let core = Gob.inspect(gob)
+    expect(core.isGob).toBe(3)
+
+
+    let err = null
+    try
+    {
+        Gob.inspect({})
+    }
+    catch (e)
+    {
+        err = e
+    }
+    expect(err === null).toBe(false)
+})
+
 
 test("Set base type", () =>
 {
@@ -119,6 +138,33 @@ describe("Set Cycle object", () =>
         expect(gob.c).toBe("c")
     })
 
+    test("Simple cycle object $set()", () =>
+    {
+        var obA = {name: "obA"}
+        var obB = {name: "obB"}
+
+        obA.toB = obB
+        obB.toA = obA
+        gob.$set("obA", obA)
+
+        expect(gob.obA.name).toBe("obA")
+        expect(gob.obA.toB.name).toBe("obB")
+        expect(gob.obA.toB.toA.name).toBe("obA")
+        expect(gob.obA.toB.toA.toB.name).toBe("obB")
+        expect(gob.obA.toB.toA.toB.toA.name).toBe("obA")
+        expect(gob.obA.toB.toA.toB.toA.toB.name).toBe("obB")
+        expect(gob.obA.toB.toA.toB.toA.toB.toA.name).toBe("obA")
+        expect(gob.obA.toB.toA.toB.toA.toB.toA.toB.name).toBe("obB")
+        expect(gob.obA.toB.toA.toB.toA.toB.toA.toB).toBe(gob.obA.toB.toA.toB.toA.toB)
+        expect(gob.obA.toB.toA.toB.toA).toBe(gob.obA)
+
+
+        expect(gob.a).toBe("a")
+        expect(gob.b).toBe("b")
+        expect(gob.c).toBe("c")
+    })
+
+    //todo:没完成复杂循环引用测试
     test("Complex cycle object", () =>
     {
         var ob = {
@@ -155,6 +201,16 @@ describe("Set Cycle object", () =>
         expect(ob.info.info2.info3.toInfo.info2.info4.toInfo3.toInfo4.toInfo.name).toBe("info")
         expect(ob.info.info2.info3.toInfo.info2.info4.toInfo3.toInfo4.toInfo).toBe(ob.info)
 
+        gob.ob = ob
+        // expect(gob.ob.info.info2.info3.toInfo4.name).toBe("info4")
+        // expect(gob.ob.info.info2.info4.toInfo3.name).toBe("info3")
+        // expect(gob.ob.info.info2.info4.toInfo.name).toBe("info")
+        // expect(gob.ob.info.info2.info3.toInfo.name).toBe("info")
+        // expect(gob.ob.info.info2.info3.toInfo.info2.name).toBe("info2")
+        // expect(gob.ob.info.info2.info3.toInfo.info2.info4.toInfo3.name).toBe("info3")
+        // expect(gob.ob.info.info2.info3.toInfo.info2.info4.toInfo3.toInfo4.toInfo.name).toBe("info")
+        // expect(gob.ob.info.info2.info3.toInfo.info2.info4.toInfo3.toInfo4.toInfo).toBe(ob.info)
+
 
     })
 })
@@ -162,17 +218,20 @@ describe("Set Cycle object", () =>
 
 describe("Delete ", () =>
 {
-    let gob = Gob()
+
 
     test("Delete object", () =>
     {
-        gob.obA = {
-            apple: {
-                type: "水果",
-                length: 32
-            },
+        let gob = Gob({
+            obA: {
+                apple: {
+                    type: "水果",
+                    length: 32
+                },
 
-        }
+            }
+        })
+
         gob.obB = {a: {v: 13}}
         expect(gob.obA.apple.type).toBe("水果")
         expect(gob.obA.apple.length).toBe(32)
