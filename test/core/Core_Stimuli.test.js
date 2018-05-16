@@ -69,7 +69,7 @@ describe("$get, $set", () =>
 
 describe("StimuliBus Log", () =>
 {
-    let gob = Gob()
+    let gob = Gob({}, {logType: {get: true}})
     let core = Gob.inspect(gob)
 
 

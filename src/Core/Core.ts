@@ -3,11 +3,11 @@
 import giveHandler from "./giveHandler"
 import StimuliBus from "./StimuliBus/StimuliBus"
 import cloneDeep from "lodash/cloneDeep"
+
 const GOB_CORE_NAME = "[Gob Core]"
 
 
 /*
-*
 *    GobFactory(state) =>  gob instance = GobProxy: {GobCore + state }
 * */
 
@@ -18,7 +18,6 @@ export class GobCore
     public options: GobOptions
     public proxy: any
     public GobFactory = GobFactory
-
     public stimuliBus = new StimuliBus(this)
     public isGob = 3
 
@@ -26,9 +25,21 @@ export class GobCore
     {
         this.data = {}
         this.gate = {}
-        this.options = options
-
+        this.options = Object.assign({}, GobCore.DEFAULT_OPTIONS, options)
     }
+
+    // 默认参数
+    static DEFAULT_OPTIONS: GobOptions = {
+        syncLog: false,
+        disableLog: false,
+        logType: {
+            set: true,
+            get: false,
+            delete: true
+        },
+        logSize:2048,
+    }
+
 }
 
 export interface GobOptions
@@ -37,6 +48,15 @@ export interface GobOptions
     syncLog?: Boolean,
     // 禁止记录 Log，默认为 false ，
     disableLog?: Boolean,
+    // 允许记录 log 的类型
+    logType?: {
+        set?: Boolean,
+        get?: Boolean,
+        delete?: Boolean,
+        [propName: string]: any;
+    }
+    // 每种类型(set, get, delete)刺激的最大记录数量，默认为 2048
+    logSize?: Number
 
     [propName: string]: any;
 }
@@ -62,7 +82,6 @@ interface GobFactory
     }
     GOB_CORE_NAME: string,
     inspect: Function
-
 }
 
 let GobFactory = <GobFactory> function (this: any, object: any, options?: object): GobProxy

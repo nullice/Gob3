@@ -1,6 +1,7 @@
 // Created by nullice on 2018/04/24 - 15:05
 
 import util from "@/Util/Util"
+
 let rcObject = util.rcObject
 
 import {GobState} from "@/Core/giveHandler"
@@ -18,10 +19,8 @@ export interface HandlerContext
     state: GobState
 }
 
-
 export interface Stimuli
 {
-
     type: string,
     path: string[] | string,
     value: any,
@@ -84,7 +83,7 @@ class StimuliBus
         // 记录上下文
         if (handlerContext)
         {
-
+            // 是否忽略一些副作用产生的刺激
             if (!IgnoreSideEffect(stimuliType, path, handlerContext))
             {
                 // console.log("Ignore IgnoreSideEffect", handlerContext)
@@ -99,7 +98,6 @@ class StimuliBus
             {
                 if (!handlerContext)
                 {
-                    console.log("getObjectValueByNames", path)
                     return rcObject.getObjectValueByNames(this.gobCore.proxy, path, null)
                 }
                 else
@@ -152,6 +150,15 @@ class StimuliBus
         {
             return
         }
+
+        if (this.gobCore.options.logType)
+        {
+            if (this.gobCore.options.logType[stimuliType] === false)
+            {
+                return
+            }
+        }
+
 
         // 基本记录
         this.stimuliLog.latestPath = path
