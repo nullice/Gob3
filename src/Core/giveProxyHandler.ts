@@ -34,7 +34,7 @@ export interface HandlerContext
  * @returns {{set: (target: any, key: any, value: any) => boolean; get: (target: any, property: any) => (any)}}
  */
 
-function giveHandler(loaclData: any, localGate: any, fullPath: string[], state: GobState)
+function giveProxyHandler(loaclData: any, localGate: any, fullPath: string[], state: GobState)
 {
 
     return {
@@ -129,4 +129,4 @@ function normalizePath(path: string[] | string): string[]
 }
 
 
-export default giveHandler
+export default giveProxyHandler

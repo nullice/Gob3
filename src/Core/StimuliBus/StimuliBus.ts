@@ -4,7 +4,7 @@ import util from "@/Util/Util"
 
 let rcObject = util.rcObject
 
-import {GobState} from "@/Core/giveHandler"
+import {GobState} from "@/Core/giveProxyHandler"
 import set from "./set"
 import get from "./get"
 import del from "./delete"

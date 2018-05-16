@@ -2,7 +2,7 @@ import util from "@/Util/Util"
 const rcType = util.rcType
 const rcObject = util.rcObject
 
-import giveHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/core/giveHandler"
+import giveProxyHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/core/giveProxyHandler"
 
 
 /**
@@ -77,7 +77,7 @@ function set(fullPath: string[], value: any, key: string, handlerContext: Handle
 function creatGate(inData: object, targetPath: string[], fullPath: string[], handlerContext: HandlerContext): any
 {
     let gate: Gate = {}
-    let proxy = new Proxy(inData, giveHandler(inData, gate, fullPath, handlerContext.state))
+    let proxy = new Proxy(inData, giveProxyHandler(inData, gate, fullPath, handlerContext.state))
     gate[GATE_PROXY_NAME] = proxy
     rcObject.setObjectValueByNames(handlerContext.localGate, targetPath, gate)
     return gate

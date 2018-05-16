@@ -1,4 +1,4 @@
-import { HandlerContext } from "@/core/giveHandler";
+import { HandlerContext } from "@/core/giveProxyHandler";
 /**
  * 收到 delete 刺激后对 gob 实例进行的操作
  * @param {string[]} fullPath

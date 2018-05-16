@@ -1,6 +1,6 @@
 // Created by nullice on 2018/04/17 - 14:39 
 
-import giveHandler from "./giveHandler"
+import giveProxyHandler from "./giveProxyHandler"
 import StimuliBus from "./StimuliBus/StimuliBus"
 import cloneDeep from "lodash/cloneDeep"
 
@@ -91,7 +91,7 @@ let GobFactory = <GobFactory> function (this: any, object: any, options?: object
 
     // 创建一个代理
     let proxy: GobProxy = new Proxy(gobCore.data,
-        giveHandler(gobCore.data, gobCore.gate, [], {
+        giveProxyHandler(gobCore.data, gobCore.gate, [], {
             coreData: gobCore.data,
             coreGate: gobCore.gate,
             gobCore,

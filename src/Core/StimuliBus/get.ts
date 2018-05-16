@@ -1,4 +1,4 @@
-import giveHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/core/giveHandler"
+import giveProxyHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/core/giveProxyHandler"
 import util from "@/Util/Util"
 const rcType = util.rcType
 

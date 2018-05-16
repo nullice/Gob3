@@ -1,4 +1,4 @@
-import { HandlerContext } from "@/core/giveHandler";
+import { HandlerContext } from "@/core/giveProxyHandler";
 /**
  *
  * @param {string[]} fullPath

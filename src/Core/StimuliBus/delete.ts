@@ -2,7 +2,7 @@ import util from "@/Util/Util"
 let rcType = util.rcType
 
 
-import giveHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/core/giveHandler"
+import giveProxyHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/core/giveProxyHandler"
 
 
 /**

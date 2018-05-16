@@ -1,4 +1,4 @@
-import { GobState } from "@/core/giveHandler";
+import { GobState } from "@/core/giveProxyHandler";
 import { GobCore } from "@/core/index";
 export interface HandlerContext {
     loaclData: any;
