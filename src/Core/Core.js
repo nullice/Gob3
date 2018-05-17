@@ -1,12 +1,11 @@
 "use strict";
 // Created by nullice on 2018/04/17 - 14:39 
 Object.defineProperty(exports, "__esModule", { value: true });
-const giveHandler_1 = require("./giveHandler");
+const giveProxyHandler_1 = require("./giveProxyHandler");
 const StimuliBus_1 = require("./StimuliBus/StimuliBus");
 const cloneDeep_1 = require("lodash/cloneDeep");
 const GOB_CORE_NAME = "[Gob Core]";
 /*
-*
 *    GobFactory(state) =>  gob instance = GobProxy: {GobCore + state }
 * */
 class GobCore {
@@ -16,15 +15,26 @@ class GobCore {
         this.isGob = 3;
         this.data = {};
         this.gate = {};
-        this.options = options;
+        this.options = Object.assign({}, GobCore.DEFAULT_OPTIONS, options);
     }
 }
+// 默认参数
+GobCore.DEFAULT_OPTIONS = {
+    syncLog: false,
+    disableLog: false,
+    logType: {
+        set: true,
+        get: false,
+        delete: true
+    },
+    logSize: 2048,
+};
 exports.GobCore = GobCore;
 let GobFactory = function (object, options) {
     // 创建一个 GobCore
     let gobCore = new GobCore(options);
     // 创建一个代理
-    let proxy = new Proxy(gobCore.data, giveHandler_1.default(gobCore.data, gobCore.gate, [], {
+    let proxy = new Proxy(gobCore.data, giveProxyHandler_1.default(gobCore.data, gobCore.gate, [], {
         coreData: gobCore.data,
         coreGate: gobCore.gate,
         gobCore,

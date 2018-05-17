@@ -15,7 +15,7 @@
     "build-ts": "tsc src/index.ts -d -m commonjs --outDir dist/ts ",
     "build-bundle": "webpack --verbose --mode=production",
     "build-and-publish": "npm run build-all && npm run doc && npm run publish",
-    "doc": "jsdoc2md dist/Gob.es.js > doc/Gob.md && type README-HEAD.MD > README.MD && type doc\\Gob.md >> README.MD",
+    "doc": "jsdoc2md dist/Gob.es.js > doc/Gob.md",
     "test": "jest",
     "test-coverage": "jest --coverage",
     "test-coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",

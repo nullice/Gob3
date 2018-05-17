@@ -20,6 +20,9 @@ describe("Core other", () =>
         expect(c.isGob).toBe(3)
         gob.$delete(GOB_CORE_NAME)
         expect(gob[GOB_CORE_NAME].isGob).toBe(3)
+        expect(gob.$core.isGob).toBe(3)
+
+
     })
 
 

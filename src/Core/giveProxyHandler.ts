@@ -62,6 +62,8 @@ function giveProxyHandler(loaclData: any, localGate: any, fullPath: string[], st
             if (key == "$get") return $get
             if (key == "$set") return $set
             if (key == "$delete") return $delete
+            if (key == "$core") return state.gobCore
+
 
 
             let nowFullPath = [...fullPath, key]

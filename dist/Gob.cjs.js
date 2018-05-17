@@ -65,7 +65,7 @@ function _nonIterableSpread() {
  * @returns {{set: (target: any, key: any, value: any) => boolean; get: (target: any, property: any) => (any)}}
  */
 
-function giveHandler(loaclData, localGate, fullPath, state) {
+function giveProxyHandler(loaclData, localGate, fullPath, state) {
   return {
     "set": function set(target, key, value) {
       // 处理特殊属性 [Gob Core]
@@ -91,6 +91,7 @@ function giveHandler(loaclData, localGate, fullPath, state) {
       if (key == "$get") return $get;
       if (key == "$set") return $set;
       if (key == "$delete") return $delete;
+      if (key == "$core") return state.gobCore;
 
       var nowFullPath = _toConsumableArray(fullPath).concat([key]);
 
@@ -164,7 +165,7 @@ function normalizePath(path) {
     return path;
   }
 }
- //# sourceMappingURL=giveHandler.js.map
+ //# sourceMappingURL=giveProxyHandler.js.map
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
@@ -1154,7 +1155,7 @@ var GATE_PROXY_NAME$1 = "[PROXY]";
  * @returns {{set: (target: any, key: any, value: any) => boolean; get: (target: any, property: any) => (any)}}
  */
 
-function giveHandler$1(loaclData, localGate, fullPath, state) {
+function giveProxyHandler$1(loaclData, localGate, fullPath, state) {
   return {
     "set": function set(target, key, value) {
       // 处理特殊属性 [Gob Core]
@@ -1180,6 +1181,7 @@ function giveHandler$1(loaclData, localGate, fullPath, state) {
       if (key == "$get") return $get;
       if (key == "$set") return $set;
       if (key == "$delete") return $delete;
+      if (key == "$core") return state.gobCore;
 
       var nowFullPath = _toConsumableArray(fullPath).concat([key]);
 
@@ -1253,7 +1255,7 @@ function normalizePath$1(path) {
     return path;
   }
 }
- //# sourceMappingURL=giveHandler.js.map
+ //# sourceMappingURL=giveProxyHandler.js.map
 
 var rcType = Util.rcType;
 var rcObject = Util.rcObject;
@@ -1322,7 +1324,7 @@ function set(fullPath, value, key, handlerContext) {
 
 function creatGate(inData, targetPath, fullPath, handlerContext) {
   var gate = {};
-  var proxy = new Proxy(inData, giveHandler$1(inData, gate, fullPath, handlerContext.state));
+  var proxy = new Proxy(inData, giveProxyHandler$1(inData, gate, fullPath, handlerContext.state));
   gate[GATE_PROXY_NAME$1] = proxy;
   rcObject.setObjectValueByNames(handlerContext.localGate, targetPath, gate);
   return gate;
@@ -1472,6 +1474,7 @@ function () {
       console.log("[receptor]", handlerContext ? "<Handler>" : "<noHandler>", stimuliType, path); // 记录上下文
 
       if (handlerContext) {
+        // 是否忽略一些副作用产生的刺激
         if (!igonreSideEffect(stimuliType, path, handlerContext)) {
           // console.log("Ignore IgnoreSideEffect", handlerContext)
           this.recordStimuli(stimuliType, path, value, origin);
@@ -1482,7 +1485,6 @@ function () {
         case "get":
           {
             if (!handlerContext) {
-              console.log("getObjectValueByNames", path);
               return rcObject$1.getObjectValueByNames(this.gobCore.proxy, path, null);
             } else {
               return get(path, path[path.length - 1], handlerContext);
@@ -1527,6 +1529,12 @@ function () {
       // 如果禁用记录，则立即返回
       if (this.gobCore.options.disableLog === true) {
         return;
+      }
+
+      if (this.gobCore.options.logType) {
+        if (this.gobCore.options.logType[stimuliType] === false) {
+          return;
+        }
       } // 基本记录
 
 
@@ -4080,7 +4088,6 @@ var cloneDeep_1 = cloneDeep;
 
 var GOB_CORE_NAME = "[Gob Core]";
 /*
-*
 *    GobFactory(state) =>  gob instance = GobProxy: {GobCore + state }
 * */
 
@@ -4094,14 +4101,25 @@ var GobCore = function GobCore() {
   this.isGob = 3;
   this.data = {};
   this.gate = {};
-  this.options = options;
+  this.options = Object.assign({}, GobCore.DEFAULT_OPTIONS, options);
+}; // 默认参数
+
+GobCore.DEFAULT_OPTIONS = {
+  syncLog: false,
+  disableLog: false,
+  logType: {
+    set: true,
+    get: false,
+    delete: true
+  },
+  logSize: 2048
 };
 
 var GobFactory = function GobFactory(object, options) {
   // 创建一个 GobCore
   var gobCore = new GobCore(options); // 创建一个代理
 
-  var proxy = new Proxy(gobCore.data, giveHandler(gobCore.data, gobCore.gate, [], {
+  var proxy = new Proxy(gobCore.data, giveProxyHandler(gobCore.data, gobCore.gate, [], {
     coreData: gobCore.data,
     coreGate: gobCore.gate,
     gobCore: gobCore,

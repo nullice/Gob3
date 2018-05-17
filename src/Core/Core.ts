@@ -37,7 +37,7 @@ export class GobCore
             get: false,
             delete: true
         },
-        logSize:2048,
+        logSize: 2048,
     }
 
 }
@@ -68,6 +68,7 @@ export interface GobProxy
     $get?: (path: string | string[]) => any,
     $set?: (path: string | string[], value: any) => Boolean,
     $delete?: (path: string | string[]) => Boolean,
+    $core?: GobCore,
 
     [propName: string]: any;
 }
@@ -98,6 +99,7 @@ let GobFactory = <GobFactory> function (this: any, object: any, options?: object
             GOB_CORE_NAME
         })
     )
+
 
     // 设置初始值
     if (object)
