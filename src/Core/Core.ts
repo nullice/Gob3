@@ -2,6 +2,7 @@
 
 import giveProxyHandler from "./giveProxyHandler"
 import StimuliBus from "./StimuliBus/StimuliBus"
+import FilterManager from "./FilterManager/FilterManager"
 import cloneDeep from "lodash/cloneDeep"
 
 const GOB_CORE_NAME = "[Gob Core]"
@@ -15,10 +16,11 @@ export class GobCore
 {
     public data: object
     public gate: object
-    public options: GobOptions
     public proxy: any
+    public options: GobOptions
     public GobFactory = GobFactory
     public stimuliBus = new StimuliBus(this)
+    public filterManager = new FilterManager({pathSeparator: "."})
     public isGob = 3
 
     constructor(options: GobOptions = {})
@@ -69,6 +71,7 @@ export interface GobProxy
     $set?: (path: string | string[], value: any) => Boolean,
     $delete?: (path: string | string[]) => Boolean,
     $core?: GobCore,
+
 
     [propName: string]: any;
 }

@@ -12,6 +12,7 @@ import IgnoreSideEffect from "./ignore-side-effect"
 
 import {GobCore} from "@/Core/Core"
 
+
 export interface HandlerContext
 {
     loaclData: any,
@@ -79,6 +80,19 @@ class StimuliBus
      */
     public receptor(this: any, stimuliType: string, path: string[], value: any, origin: object | string | null, handlerContext?: HandlerContext)
     {
+        let stimuli = {
+            type: stimuliType,
+            path: path,
+            value: value,
+            origin: origin
+        }
+
+
+        stimuliType = stimuli.type
+        path = stimuli.path
+        value = stimuli.value
+        origin = stimuli.origin
+
         console.log("[receptor]", handlerContext ? "<Handler>" : "<noHandler>", stimuliType, path)
         // 记录上下文
         if (handlerContext)
@@ -89,9 +103,7 @@ class StimuliBus
                 // console.log("Ignore IgnoreSideEffect", handlerContext)
                 this.recordStimuli(stimuliType, path, value, origin)
             }
-
         }
-
         switch (stimuliType)
         {
             case "get":

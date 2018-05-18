@@ -42,7 +42,7 @@ class FilterManager
         pathSeparator: "."
     }
 
-    constructor(options: FilterManagerOptions)
+    constructor(options?: FilterManagerOptions)
     {
         this.filters = {
             pre: {},
@@ -170,7 +170,8 @@ class FilterManager
         if (typeof  func !== "function")
         {
             throw Error("[Gob] FilterManager.newFilter(), func is not a functin. func is " + typeof  func)
-        }path instanceof String
+        }
+        path instanceof String
         if (!Array.isArray(path) && !(path instanceof RegExp) && !(typeof path === "string"))
         {
             throw Error("[Gob] FilterManager.newFilter(), path is not a Array|String|RegExp. path is " + typeof  path)
