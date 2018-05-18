@@ -139,7 +139,7 @@ GobFactory.inspect = function (gob: any): GobCore
     }
     else
     {
-        throw Error("Gob.inspect: param is not Gob3 Instance. :" + gob)
+        throw Error("[Gob] Gob.inspect: param is not Gob3 Instance. :" + gob)
 
     }
 }
