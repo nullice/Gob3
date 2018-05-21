@@ -6,3 +6,7 @@ temp
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
+src/*.js
+src/*.map
+src/**/*.js
+src/**/*.map
