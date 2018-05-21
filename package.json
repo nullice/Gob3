@@ -31,6 +31,7 @@
     "clone-deep": "^4.0.0",
     "is-odd": "^2.0.0",
     "lodash": "^4.17.10",
+    "minimatch": "^3.0.4",
     "richang.js": "^4.5.5"
   },
   "devDependencies": {
@@ -42,6 +43,7 @@
     "@babel/preset-env": "^7.0.0-beta.44",
     "@types/jest": "^22.2.3",
     "@types/lodash": "^4.14.108",
+    "@types/minimatch": "^3.0.3",
     "@types/node": "^9.6.4",
     "babel-core": "^7.0.0-beta.3",
     "babel-jest": "^22.4.3",
@@ -71,7 +73,8 @@
     },
     "coveragePathIgnorePatterns": [
       "/node_modules/",
-      "/dist/"
+      "/dist/",
+      "/src/Util/lib"
     ],
     "transform": {
       "^.+\\.tsx?$": "ts-jest",

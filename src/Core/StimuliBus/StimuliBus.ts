@@ -5,12 +5,16 @@ import util from "@/Util/Util"
 let rcObject = util.rcObject
 
 import {GobState} from "@/Core/giveProxyHandler"
+import {FilterType} from "@/Core/FilterManager/FilterManager"
 import set from "./set"
 import get from "./get"
 import del from "./delete"
 import IgnoreSideEffect from "./ignore-side-effect"
+import stimuliFiltering from "./stimuli-filtering"
+
 
 import {GobCore} from "@/Core/Core"
+import {Filter} from "../../../typings/core/FilterManager/FilterManager"
 
 
 export interface HandlerContext
@@ -88,10 +92,43 @@ class StimuliBus
         }
 
 
+        // 过滤器处理
+        let activeFilters = this.gobCore.filterManager.getFilters(path, FilterType.pre)
+        let isAsyncFlow = false // 是否是一个异步的过滤器流程
+
+        for (var i = 0; i < activeFilters.length; i++)
+        {
+            if (activeFilters[i].isAsync)
+            {
+                isAsyncFlow = true
+                break
+            }
+        }
+
+
+
+
         stimuliType = stimuli.type
         path = stimuli.path
         value = stimuli.value
         origin = stimuli.origin
+
+
+        return this.react(stimuliType, path, value, origin, handlerContext)
+    }
+
+
+    /**
+     * 刺激最终反应，根据刺激改变 data
+     * @param {string} stimuliType
+     * @param {string[]} path
+     * @param value
+     * @param {object | string | null} origin
+     * @param {HandlerContext} handlerContext
+     * @returns {any}
+     */
+    react(this: any, stimuliType: string, path: string[], value: any, origin: object | string | null, handlerContext?: HandlerContext)
+    {
 
         console.log("[receptor]", handlerContext ? "<Handler>" : "<noHandler>", stimuliType, path)
         // 记录上下文
@@ -104,6 +141,7 @@ class StimuliBus
                 this.recordStimuli(stimuliType, path, value, origin)
             }
         }
+
         switch (stimuliType)
         {
             case "get":
@@ -145,7 +183,6 @@ class StimuliBus
             }
         }
     }
-
 
     /**
      * 记录刺激

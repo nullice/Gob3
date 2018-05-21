@@ -10,6 +10,30 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
 };
 
+var classCallCheck = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var createClass = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
 var toConsumableArray = function (arr) {
   if (Array.isArray(arr)) {
     for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
@@ -126,21 +150,21 @@ var ObjectOBJ = {
         var nowValue;
         for (var i = 0; i < names.length - (aheadEndTime || 0); i++) {
             if (i == 0) {
-                if (object[names[i]] != undefined) {
-                    nowValue = object[names[i]];
+                var item = object[names[i]];
+                if (item != undefined) {
+                    nowValue = item;
                 } else {
-                    return null;
+                    return undefined;
                 }
             } else {
-
-                if (nowValue[names[i]] != undefined) {
-                    nowValue = nowValue[names[i]];
+                var item = nowValue[names[i]];
+                if (item != undefined) {
+                    nowValue = item;
                 } else {
-                    return null;
+                    return undefined;
                 }
             }
         }
-
         return nowValue;
     },
 
@@ -151,48 +175,60 @@ var ObjectOBJ = {
      * @param value 值
      */
     setObjectValueByNames: function setObjectValueByNames(object, names, value) {
-        var nowObject;
-
-        if (names.length == 1) {
+        var namesLen = names.length;
+        if (namesLen == 1) {
             object[names[0]] = value;
             return;
         }
 
-        for (var i = 0; i < names.length; i++) {
-            if (i == 0 && names.length > 2) {
-                if (object[names[0]] == undefined) {
-                    object[names[0]] = {};
-                }
-                nowObject = object[names[0]];
-            } else if (i < names.length - 2 && names.length > 2) {
-                if (nowObject[names[i]] == undefined) {
-                    nowObject[names[i]] = {};
-                }
+        var nowObject = object;
+        var nowKey = null;
+        for (var i = 0; i < namesLen; i++) {
+            nowKey = names[i];
 
-                nowObject = nowObject[names[i]];
-            } else if (i == names.length - 2) {
-                if (names.length == 2) {
-                    if (object[names[0]] == undefined) {
-                        object[names[0]] = {};
-                    }
-                    nowObject = object[names[0]];
+            if (i == namesLen - 1) {
 
-                    nowObject[names[1]] = value;
-                    return;
+                nowObject[nowKey] = value;
+                return;
+            } else {
+                // 如果路径上对象不存在则创建对象
+                if (!(nowKey in nowObject)) {
+                    nowObject[nowKey] = {};
+                    nowObject = nowObject[nowKey];
                 } else {
-
-                    if (nowObject[names[i]] == undefined) {
-                        nowObject[names[i]] = {};
-                    }
-
-                    nowObject = nowObject[names[i]];
-                    nowObject[names[i + 1]] = value;
-                    return;
+                    nowObject = nowObject[nowKey];
                 }
             }
         }
+        return;
     },
+    /**
+     * 根据属性名路径列表（names）对对象属性删除
+     * @param object 对象
+     * @param names 属性名路径列表，如 [position,enableAssigns,y]
+     */
+    deleteObjectValueByNames: function deleteObjectValueByNames(object, names) {
+        var namesLen = names.length;
+        if (namesLen == 1) {
+            delete object[names[0]];
+            return;
+        }
 
+        var nowObject = object;
+        var nowKey = null;
+        for (var i = 0; i < namesLen; i++) {
+            nowKey = names[i];
+
+            if (i == namesLen - 1) {
+
+                delete nowObject[nowKey];
+                return;
+            } else {
+                nowObject = nowObject[nowKey];
+            }
+        }
+        return;
+    },
     /**
      * 在由对象数组组成的树中查找对象。如果查找全部结果会以数组返回，否则直接返回找到的对象。
      *
@@ -356,8 +392,17 @@ var ObjectOBJ = {
      *
      * @param {object} object
      * @param {function} eachFunc 处理函数
+     * @param {boolean|function} [checkCycle] 是否检查循环引用，为 true 会跳过循环引用，还可以提供一个函数 checkCycleCallback(target, path, cyclePath) 来处理一些事
      */
-    pathEach: function pathEach(object, eachFunc) {
+    pathEach: function pathEach(object, eachFunc, checkCycle) {
+
+        if (checkCycle) {
+            var useCycleCallback = typeof checkCycle === "function";
+            var cycleCache = new WeakMap();
+
+            cycleCache.set(object, useCycleCallback ? [] : true);
+        }
+
         _each(object, [], 0);
 
         function _each(object) {
@@ -366,6 +411,25 @@ var ObjectOBJ = {
 
             for (var key in object) {
                 var item = object[key];
+
+                // 检查循环引用
+                if (checkCycle && (typeof item === "undefined" ? "undefined" : _typeof(item)) === "object") {
+                    var nowPath = [].concat(toConsumableArray(path), [key]);
+
+                    if (cycleCache.get(item)) {
+                        if (useCycleCallback) {
+                            checkCycle(item, nowPath, cycleCache.get(item));
+                        }
+                        continue; // >_< 忽略循环引用
+                    } else {
+                        if (useCycleCallback) {
+                            cycleCache.set(item, nowPath);
+                        } else {
+                            cycleCache.set(item, true);
+                        }
+                    }
+                }
+
                 var nowPath = [].concat(toConsumableArray(path), [key]);
                 eachFunc(item, nowPath, deep);
 
@@ -1528,6 +1592,840 @@ var FileFIL = {
      */
 };
 
+var utils = createCommonjsModule(function (module, exports) {
+
+var has = Object.prototype.hasOwnProperty;
+
+var hexTable = (function () {
+    var array = [];
+    for (var i = 0; i < 256; ++i) {
+        array.push('%' + ((i < 16 ? '0' : '') + i.toString(16)).toUpperCase());
+    }
+
+    return array;
+}());
+
+var compactQueue = function compactQueue(queue) {
+    var obj;
+
+    while (queue.length) {
+        var item = queue.pop();
+        obj = item.obj[item.prop];
+
+        if (Array.isArray(obj)) {
+            var compacted = [];
+
+            for (var j = 0; j < obj.length; ++j) {
+                if (typeof obj[j] !== 'undefined') {
+                    compacted.push(obj[j]);
+                }
+            }
+
+            item.obj[item.prop] = compacted;
+        }
+    }
+
+    return obj;
+};
+
+exports.arrayToObject = function arrayToObject(source, options) {
+    var obj = options && options.plainObjects ? Object.create(null) : {};
+    for (var i = 0; i < source.length; ++i) {
+        if (typeof source[i] !== 'undefined') {
+            obj[i] = source[i];
+        }
+    }
+
+    return obj;
+};
+
+exports.merge = function merge(target, source, options) {
+    if (!source) {
+        return target;
+    }
+
+    if (typeof source !== 'object') {
+        if (Array.isArray(target)) {
+            target.push(source);
+        } else if (typeof target === 'object') {
+            if (options.plainObjects || options.allowPrototypes || !has.call(Object.prototype, source)) {
+                target[source] = true;
+            }
+        } else {
+            return [target, source];
+        }
+
+        return target;
+    }
+
+    if (typeof target !== 'object') {
+        return [target].concat(source);
+    }
+
+    var mergeTarget = target;
+    if (Array.isArray(target) && !Array.isArray(source)) {
+        mergeTarget = exports.arrayToObject(target, options);
+    }
+
+    if (Array.isArray(target) && Array.isArray(source)) {
+        source.forEach(function (item, i) {
+            if (has.call(target, i)) {
+                if (target[i] && typeof target[i] === 'object') {
+                    target[i] = exports.merge(target[i], item, options);
+                } else {
+                    target.push(item);
+                }
+            } else {
+                target[i] = item;
+            }
+        });
+        return target;
+    }
+
+    return Object.keys(source).reduce(function (acc, key) {
+        var value = source[key];
+
+        if (has.call(acc, key)) {
+            acc[key] = exports.merge(acc[key], value, options);
+        } else {
+            acc[key] = value;
+        }
+        return acc;
+    }, mergeTarget);
+};
+
+exports.assign = function assignSingleSource(target, source) {
+    return Object.keys(source).reduce(function (acc, key) {
+        acc[key] = source[key];
+        return acc;
+    }, target);
+};
+
+exports.decode = function (str) {
+    try {
+        return decodeURIComponent(str.replace(/\+/g, ' '));
+    } catch (e) {
+        return str;
+    }
+};
+
+exports.encode = function encode(str) {
+    // This code was originally written by Brian White (mscdex) for the io.js core querystring library.
+    // It has been adapted here for stricter adherence to RFC 3986
+    if (str.length === 0) {
+        return str;
+    }
+
+    var string = typeof str === 'string' ? str : String(str);
+
+    var out = '';
+    for (var i = 0; i < string.length; ++i) {
+        var c = string.charCodeAt(i);
+
+        if (
+            c === 0x2D // -
+            || c === 0x2E // .
+            || c === 0x5F // _
+            || c === 0x7E // ~
+            || (c >= 0x30 && c <= 0x39) // 0-9
+            || (c >= 0x41 && c <= 0x5A) // a-z
+            || (c >= 0x61 && c <= 0x7A) // A-Z
+        ) {
+            out += string.charAt(i);
+            continue;
+        }
+
+        if (c < 0x80) {
+            out = out + hexTable[c];
+            continue;
+        }
+
+        if (c < 0x800) {
+            out = out + (hexTable[0xC0 | (c >> 6)] + hexTable[0x80 | (c & 0x3F)]);
+            continue;
+        }
+
+        if (c < 0xD800 || c >= 0xE000) {
+            out = out + (hexTable[0xE0 | (c >> 12)] + hexTable[0x80 | ((c >> 6) & 0x3F)] + hexTable[0x80 | (c & 0x3F)]);
+            continue;
+        }
+
+        i += 1;
+        c = 0x10000 + (((c & 0x3FF) << 10) | (string.charCodeAt(i) & 0x3FF));
+        out += hexTable[0xF0 | (c >> 18)]
+            + hexTable[0x80 | ((c >> 12) & 0x3F)]
+            + hexTable[0x80 | ((c >> 6) & 0x3F)]
+            + hexTable[0x80 | (c & 0x3F)];
+    }
+
+    return out;
+};
+
+exports.compact = function compact(value) {
+    var queue = [{ obj: { o: value }, prop: 'o' }];
+    var refs = [];
+
+    for (var i = 0; i < queue.length; ++i) {
+        var item = queue[i];
+        var obj = item.obj[item.prop];
+
+        var keys = Object.keys(obj);
+        for (var j = 0; j < keys.length; ++j) {
+            var key = keys[j];
+            var val = obj[key];
+            if (typeof val === 'object' && val !== null && refs.indexOf(val) === -1) {
+                queue.push({ obj: obj, prop: key });
+                refs.push(val);
+            }
+        }
+    }
+
+    return compactQueue(queue);
+};
+
+exports.isRegExp = function isRegExp(obj) {
+    return Object.prototype.toString.call(obj) === '[object RegExp]';
+};
+
+exports.isBuffer = function isBuffer(obj) {
+    if (obj === null || typeof obj === 'undefined') {
+        return false;
+    }
+
+    return !!(obj.constructor && obj.constructor.isBuffer && obj.constructor.isBuffer(obj));
+};
+});
+var utils_1 = utils.arrayToObject;
+var utils_2 = utils.merge;
+var utils_3 = utils.assign;
+var utils_4 = utils.decode;
+var utils_5 = utils.encode;
+var utils_6 = utils.compact;
+var utils_7 = utils.isRegExp;
+var utils_8 = utils.isBuffer;
+
+var replace = String.prototype.replace;
+var percentTwenties = /%20/g;
+
+var formats = {
+    'default': 'RFC3986',
+    formatters: {
+        RFC1738: function (value) {
+            return replace.call(value, percentTwenties, '+');
+        },
+        RFC3986: function (value) {
+            return value;
+        }
+    },
+    RFC1738: 'RFC1738',
+    RFC3986: 'RFC3986'
+};
+
+var arrayPrefixGenerators = {
+    brackets: function brackets(prefix) { // eslint-disable-line func-name-matching
+        return prefix + '[]';
+    },
+    indices: function indices(prefix, key) { // eslint-disable-line func-name-matching
+        return prefix + '[' + key + ']';
+    },
+    repeat: function repeat(prefix) { // eslint-disable-line func-name-matching
+        return prefix;
+    }
+};
+
+var toISO = Date.prototype.toISOString;
+
+var defaults$1 = {
+    delimiter: '&',
+    encode: true,
+    encoder: utils.encode,
+    encodeValuesOnly: false,
+    serializeDate: function serializeDate(date) { // eslint-disable-line func-name-matching
+        return toISO.call(date);
+    },
+    skipNulls: false,
+    strictNullHandling: false
+};
+
+var stringify$1 = function stringify( // eslint-disable-line func-name-matching
+    object,
+    prefix,
+    generateArrayPrefix,
+    strictNullHandling,
+    skipNulls,
+    encoder,
+    filter,
+    sort,
+    allowDots,
+    serializeDate,
+    formatter,
+    encodeValuesOnly
+) {
+    var obj = object;
+    if (typeof filter === 'function') {
+        obj = filter(prefix, obj);
+    } else if (obj instanceof Date) {
+        obj = serializeDate(obj);
+    } else if (obj === null) {
+        if (strictNullHandling) {
+            return encoder && !encodeValuesOnly ? encoder(prefix, defaults$1.encoder) : prefix;
+        }
+
+        obj = '';
+    }
+
+    if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean' || utils.isBuffer(obj)) {
+        if (encoder) {
+            var keyValue = encodeValuesOnly ? prefix : encoder(prefix, defaults$1.encoder);
+            return [formatter(keyValue) + '=' + formatter(encoder(obj, defaults$1.encoder))];
+        }
+        return [formatter(prefix) + '=' + formatter(String(obj))];
+    }
+
+    var values = [];
+
+    if (typeof obj === 'undefined') {
+        return values;
+    }
+
+    var objKeys;
+    if (Array.isArray(filter)) {
+        objKeys = filter;
+    } else {
+        var keys = Object.keys(obj);
+        objKeys = sort ? keys.sort(sort) : keys;
+    }
+
+    for (var i = 0; i < objKeys.length; ++i) {
+        var key = objKeys[i];
+
+        if (skipNulls && obj[key] === null) {
+            continue;
+        }
+
+        if (Array.isArray(obj)) {
+            values = values.concat(stringify(
+                obj[key],
+                generateArrayPrefix(prefix, key),
+                generateArrayPrefix,
+                strictNullHandling,
+                skipNulls,
+                encoder,
+                filter,
+                sort,
+                allowDots,
+                serializeDate,
+                formatter,
+                encodeValuesOnly
+            ));
+        } else {
+            values = values.concat(stringify(
+                obj[key],
+                prefix + (allowDots ? '.' + key : '[' + key + ']'),
+                generateArrayPrefix,
+                strictNullHandling,
+                skipNulls,
+                encoder,
+                filter,
+                sort,
+                allowDots,
+                serializeDate,
+                formatter,
+                encodeValuesOnly
+            ));
+        }
+    }
+
+    return values;
+};
+
+var stringify_1 = function (object, opts) {
+    var obj = object;
+    var options = opts ? utils.assign({}, opts) : {};
+
+    if (options.encoder !== null && options.encoder !== undefined && typeof options.encoder !== 'function') {
+        throw new TypeError('Encoder has to be a function.');
+    }
+
+    var delimiter = typeof options.delimiter === 'undefined' ? defaults$1.delimiter : options.delimiter;
+    var strictNullHandling = typeof options.strictNullHandling === 'boolean' ? options.strictNullHandling : defaults$1.strictNullHandling;
+    var skipNulls = typeof options.skipNulls === 'boolean' ? options.skipNulls : defaults$1.skipNulls;
+    var encode = typeof options.encode === 'boolean' ? options.encode : defaults$1.encode;
+    var encoder = typeof options.encoder === 'function' ? options.encoder : defaults$1.encoder;
+    var sort = typeof options.sort === 'function' ? options.sort : null;
+    var allowDots = typeof options.allowDots === 'undefined' ? false : options.allowDots;
+    var serializeDate = typeof options.serializeDate === 'function' ? options.serializeDate : defaults$1.serializeDate;
+    var encodeValuesOnly = typeof options.encodeValuesOnly === 'boolean' ? options.encodeValuesOnly : defaults$1.encodeValuesOnly;
+    if (typeof options.format === 'undefined') {
+        options.format = formats['default'];
+    } else if (!Object.prototype.hasOwnProperty.call(formats.formatters, options.format)) {
+        throw new TypeError('Unknown format option provided.');
+    }
+    var formatter = formats.formatters[options.format];
+    var objKeys;
+    var filter;
+
+    if (typeof options.filter === 'function') {
+        filter = options.filter;
+        obj = filter('', obj);
+    } else if (Array.isArray(options.filter)) {
+        filter = options.filter;
+        objKeys = filter;
+    }
+
+    var keys = [];
+
+    if (typeof obj !== 'object' || obj === null) {
+        return '';
+    }
+
+    var arrayFormat;
+    if (options.arrayFormat in arrayPrefixGenerators) {
+        arrayFormat = options.arrayFormat;
+    } else if ('indices' in options) {
+        arrayFormat = options.indices ? 'indices' : 'repeat';
+    } else {
+        arrayFormat = 'indices';
+    }
+
+    var generateArrayPrefix = arrayPrefixGenerators[arrayFormat];
+
+    if (!objKeys) {
+        objKeys = Object.keys(obj);
+    }
+
+    if (sort) {
+        objKeys.sort(sort);
+    }
+
+    for (var i = 0; i < objKeys.length; ++i) {
+        var key = objKeys[i];
+
+        if (skipNulls && obj[key] === null) {
+            continue;
+        }
+
+        keys = keys.concat(stringify$1(
+            obj[key],
+            key,
+            generateArrayPrefix,
+            strictNullHandling,
+            skipNulls,
+            encode ? encoder : null,
+            filter,
+            sort,
+            allowDots,
+            serializeDate,
+            formatter,
+            encodeValuesOnly
+        ));
+    }
+
+    var joined = keys.join(delimiter);
+    var prefix = options.addQueryPrefix === true ? '?' : '';
+
+    return joined.length > 0 ? prefix + joined : '';
+};
+
+var has$1 = Object.prototype.hasOwnProperty;
+
+var defaults$2 = {
+    allowDots: false,
+    allowPrototypes: false,
+    arrayLimit: 20,
+    decoder: utils.decode,
+    delimiter: '&',
+    depth: 5,
+    parameterLimit: 1000,
+    plainObjects: false,
+    strictNullHandling: false
+};
+
+var parseValues = function parseQueryStringValues(str, options) {
+    var obj = {};
+    var cleanStr = options.ignoreQueryPrefix ? str.replace(/^\?/, '') : str;
+    var limit = options.parameterLimit === Infinity ? undefined : options.parameterLimit;
+    var parts = cleanStr.split(options.delimiter, limit);
+
+    for (var i = 0; i < parts.length; ++i) {
+        var part = parts[i];
+
+        var bracketEqualsPos = part.indexOf(']=');
+        var pos = bracketEqualsPos === -1 ? part.indexOf('=') : bracketEqualsPos + 1;
+
+        var key, val;
+        if (pos === -1) {
+            key = options.decoder(part, defaults$2.decoder);
+            val = options.strictNullHandling ? null : '';
+        } else {
+            key = options.decoder(part.slice(0, pos), defaults$2.decoder);
+            val = options.decoder(part.slice(pos + 1), defaults$2.decoder);
+        }
+        if (has$1.call(obj, key)) {
+            obj[key] = [].concat(obj[key]).concat(val);
+        } else {
+            obj[key] = val;
+        }
+    }
+
+    return obj;
+};
+
+var parseObject = function (chain, val, options) {
+    var leaf = val;
+
+    for (var i = chain.length - 1; i >= 0; --i) {
+        var obj;
+        var root = chain[i];
+
+        if (root === '[]') {
+            obj = [];
+            obj = obj.concat(leaf);
+        } else {
+            obj = options.plainObjects ? Object.create(null) : {};
+            var cleanRoot = root.charAt(0) === '[' && root.charAt(root.length - 1) === ']' ? root.slice(1, -1) : root;
+            var index = parseInt(cleanRoot, 10);
+            if (
+                !isNaN(index)
+                && root !== cleanRoot
+                && String(index) === cleanRoot
+                && index >= 0
+                && (options.parseArrays && index <= options.arrayLimit)
+            ) {
+                obj = [];
+                obj[index] = leaf;
+            } else {
+                obj[cleanRoot] = leaf;
+            }
+        }
+
+        leaf = obj;
+    }
+
+    return leaf;
+};
+
+var parseKeys = function parseQueryStringKeys(givenKey, val, options) {
+    if (!givenKey) {
+        return;
+    }
+
+    // Transform dot notation to bracket notation
+    var key = options.allowDots ? givenKey.replace(/\.([^.[]+)/g, '[$1]') : givenKey;
+
+    // The regex chunks
+
+    var brackets = /(\[[^[\]]*])/;
+    var child = /(\[[^[\]]*])/g;
+
+    // Get the parent
+
+    var segment = brackets.exec(key);
+    var parent = segment ? key.slice(0, segment.index) : key;
+
+    // Stash the parent if it exists
+
+    var keys = [];
+    if (parent) {
+        // If we aren't using plain objects, optionally prefix keys
+        // that would overwrite object prototype properties
+        if (!options.plainObjects && has$1.call(Object.prototype, parent)) {
+            if (!options.allowPrototypes) {
+                return;
+            }
+        }
+
+        keys.push(parent);
+    }
+
+    // Loop through children appending to the array until we hit depth
+
+    var i = 0;
+    while ((segment = child.exec(key)) !== null && i < options.depth) {
+        i += 1;
+        if (!options.plainObjects && has$1.call(Object.prototype, segment[1].slice(1, -1))) {
+            if (!options.allowPrototypes) {
+                return;
+            }
+        }
+        keys.push(segment[1]);
+    }
+
+    // If there's a remainder, just add whatever is left
+
+    if (segment) {
+        keys.push('[' + key.slice(segment.index) + ']');
+    }
+
+    return parseObject(keys, val, options);
+};
+
+var parse$1 = function (str, opts) {
+    var options = opts ? utils.assign({}, opts) : {};
+
+    if (options.decoder !== null && options.decoder !== undefined && typeof options.decoder !== 'function') {
+        throw new TypeError('Decoder has to be a function.');
+    }
+
+    options.ignoreQueryPrefix = options.ignoreQueryPrefix === true;
+    options.delimiter = typeof options.delimiter === 'string' || utils.isRegExp(options.delimiter) ? options.delimiter : defaults$2.delimiter;
+    options.depth = typeof options.depth === 'number' ? options.depth : defaults$2.depth;
+    options.arrayLimit = typeof options.arrayLimit === 'number' ? options.arrayLimit : defaults$2.arrayLimit;
+    options.parseArrays = options.parseArrays !== false;
+    options.decoder = typeof options.decoder === 'function' ? options.decoder : defaults$2.decoder;
+    options.allowDots = typeof options.allowDots === 'boolean' ? options.allowDots : defaults$2.allowDots;
+    options.plainObjects = typeof options.plainObjects === 'boolean' ? options.plainObjects : defaults$2.plainObjects;
+    options.allowPrototypes = typeof options.allowPrototypes === 'boolean' ? options.allowPrototypes : defaults$2.allowPrototypes;
+    options.parameterLimit = typeof options.parameterLimit === 'number' ? options.parameterLimit : defaults$2.parameterLimit;
+    options.strictNullHandling = typeof options.strictNullHandling === 'boolean' ? options.strictNullHandling : defaults$2.strictNullHandling;
+
+    if (str === '' || str === null || typeof str === 'undefined') {
+        return options.plainObjects ? Object.create(null) : {};
+    }
+
+    var tempObj = typeof str === 'string' ? parseValues(str, options) : str;
+    var obj = options.plainObjects ? Object.create(null) : {};
+
+    // Iterate over the keys and setup the new object
+
+    var keys = Object.keys(tempObj);
+    for (var i = 0; i < keys.length; ++i) {
+        var key = keys[i];
+        var newObj = parseKeys(key, tempObj[key], options);
+        obj = utils.merge(obj, newObj, options);
+    }
+
+    return utils.compact(obj);
+};
+
+var lib = {
+    formats: formats,
+    parse: parse$1,
+    stringify: stringify_1
+};
+
+// Created by nullice on 2018/04/23 - 11:21 
+
+var Url = {
+
+    /**
+     * 移除 Url 的 Query，即使在 # 后的也可以移除
+     * @param url
+     */
+    removeQuery: function removeQuery(url) {
+        url = url + "";
+        return url.replace(/\?.*$/, "");
+    },
+
+    /**
+     * 获取链接的 Query，即使在 # 后的也可以获取
+     * @param {{string}} url
+     * @param  {{boolean}} getObject 是否解析成对象
+     * @returns {string}
+     */
+    getQuery: function getQuery(url, getObject) {
+        var reg = /\?.*/;
+        var re = reg.exec(url);
+        if (re) {
+            var query = re[0];
+            if (getObject) {
+                return lib.parse(query.slice(1));
+            } else {
+                return query.slice(1);
+            }
+        }
+    },
+    urlParse: function urlParse$$1() {}
+
+    /**
+     * @exports Url
+     */
+};
+
+// Created by nullice on 2018/05/02 - 19:33
+
+//      ___                       ___           ___           ___           ___           ___
+//     /\  \                     /\__\         /\  \         /\  \         /\  \         /\__\
+//    /::\  \       ___         /:/  /         \:\  \       /::\  \        \:\  \       /:/ _/_
+//   /:/\:\__\     /\__\       /:/  /           \:\  \     /:/\:\  \        \:\  \     /:/ /\  \
+//  /:/ /:/  /    /:/__/      /:/  /  ___   ___ /::\  \   /:/ /::\  \   _____\:\  \   /:/ /::\  \
+// /:/_/:/__/___ /::\  \     /:/__/  /\__\ /\  /:/\:\__\ /:/_/:/\:\__\ /::::::::\__\ /:/__\/\:\__\
+// \:\/:::::/  / \/\:\  \__  \:\  \ /:/  / \:\/:/  \/__/ \:\/:/  \/__/ \:\~~\~~\/__/ \:\  \ /:/  /
+//  \::/~~/~~~~   ~~\:\/\__\  \:\  /:/  /   \::/__/       \::/__/       \:\  \        \:\  /:/  /
+//   \:\~~\          \::/  /   \:\/:/  /     \:\  \        \:\  \        \:\  \        \:\/:/  /
+//    \:\__\         /:/  /     \::/  /       \:\__\        \:\__\        \:\__\        \::/  /
+//     \/__/         \/__/       \/__/         \/__/         \/__/         \/__/         \/__/
+//
+//
+//                日常
+//        +-------------------+
+//        |   Richang  JSEX   |
+//        +-------------------+
+//              · Cache ·
+//
+//       By nullice ui@nullice.com
+//             nullice.com
+//            license: MIT
+
+/**
+ * 缓存相关
+ * @type {{}}
+ */
+var Cache = {
+
+    CacheObject: function () {
+        /**
+         * 创建一个对象缓存
+         * @param [maxSize] 缓存最大数量，达到最大数量后会清除最后的缓存（LRU 最近最少使用）
+         * @param [blankSize] 预留空位，缓存满时清除末位缓存的数量，设置的大可以减少缓存清理的次数，但是过大会影响缓存可用数。
+         */
+        function CacheObject() {
+            var maxSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 64;
+            var blankSize = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 3;
+            classCallCheck(this, CacheObject);
+
+
+            /**
+             *  缓存实际存储对象
+             * @type {{}}
+             */
+            this.cacheOb = {};
+            /**
+             * 键队列
+             * @type {Array}
+             */
+            this.keyList = [];
+            this.keyListOffset = 0;
+
+            /**
+             * 键映射
+             * @type {{}}
+             */
+            this.keyMap = {};
+
+            /**
+             * 最大缓存数量
+             * @type {number}
+             */
+            this.maxSize = maxSize;
+
+            /**
+             * 空置数量
+             * @type {number}
+             */
+            this.blankSize = blankSize;
+
+            /**
+             * 当前缓存数量
+             * @type {number}
+             */
+            this.size = 0;
+        }
+
+        createClass(CacheObject, [{
+            key: "get",
+            value: function get$$1(key) {
+                var _this = this;
+
+                // 如果 key 已在 keyList 中存在，则设置它为 undefined
+                if (this.keyMap[key] !== undefined) {
+
+                    var keyIndex = this.keyMap[key] + this.keyListOffset;
+                    this.keyList[keyIndex] = undefined;
+                    this.keyList.push(key);
+                    var index = this.keyList.length - 1;
+                    this.keyMap[key] = index - this.keyListOffset;
+                }
+
+                if (this.keyList.length > 200) {
+                    setTimeout(function () {
+                        _this.reMap();
+                    }, 0);
+                }
+
+                return this.cacheOb[key];
+            }
+        }, {
+            key: "set",
+            value: function set$$1(key, value) {
+                this.size++;
+
+                if (this.size > this.maxSize) {
+                    //开始淘汰
+                    this.eliminate();
+                }
+
+                this.keyList.push(key);
+                var index = this.keyList.length - 1;
+                // 如果 key 已在 keyList 中存在，则设置它为 undefined
+                if (this.keyMap[key] !== undefined) {
+                    this.keyList[this.keyMap[key] + this.keyListOffset] = undefined;
+                    this.size--;
+                }
+                this.keyMap[key] = index - this.keyListOffset;
+                return this.cacheOb[key] = value;
+            }
+
+            /**
+             * 淘汰过期缓存
+             */
+
+        }, {
+            key: "eliminate",
+            value: function eliminate() {
+                for (var i = 0, done = 0; done < this.blankSize; i++) {
+                    var key = this.keyList.shift();
+                    this.keyListOffset--;
+                    if (key !== undefined) {
+
+                        delete this.cacheOb[key];
+                        delete this.keyMap[key];
+                        this.size--;
+                        done++;
+                    }
+                }
+            }
+        }, {
+            key: "reMap",
+            value: function reMap() {
+
+                var newList = [];
+                for (var i = 0; i < this.keyList.length; i++) {
+                    var key = this.keyList[i];
+                    if (key !== undefined) {
+                        newList.push(key);
+                    }
+                }
+                this.keyList = newList;
+                this.keyListOffset = 0;
+                for (var i = 0; i < this.keyList.length; i++) {
+                    var _key = this.keyList[i];
+                    this.keyMap[_key] = i;
+                }
+            }
+
+            /**
+             * 清空所有缓存
+             */
+
+        }, {
+            key: "clear",
+            value: function clear() {
+                this.cacheOb = {};
+                this.keyList = [];
+                this.keyMap = {};
+                this.keyListOffset = 0;
+                this.size = 0;
+            }
+        }]);
+        return CacheObject;
+    }()
+
+    /**
+     * @exports Cache
+     */
+};
+
 var Richang = {
     Object: ObjectOBJ,
     String: StringSTR,
@@ -1537,11 +2435,9 @@ var Richang = {
     Console: ConsoleCON,
     Tool: Tool,
     File: FileFIL,
-    Calc: Calc
-
-    /**
-     * @export Richang
-     */
+    Calc: Calc,
+    Url: Url,
+    Cache: Cache
 };
 
 exports.Object = ObjectOBJ;
@@ -1553,6 +2449,8 @@ exports.Console = ConsoleCON;
 exports.Tool = Tool;
 exports.File = FileFIL;
 exports.Calc = Calc;
+exports.Url = Url;
+exports.Cache = Cache;
 exports.default = Richang;
 
 Object.defineProperty(exports, '__esModule', { value: true });

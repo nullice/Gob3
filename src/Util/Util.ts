@@ -1,5 +1,5 @@
 import {Type as rcType, Object as rcObject} from "richang.js/dist/RichangEs.js"
-import  minimatch from "./lib/minimatch.js"
+import  minimatch from "../../lib/minimatch.js"
 
 
 if (window)
