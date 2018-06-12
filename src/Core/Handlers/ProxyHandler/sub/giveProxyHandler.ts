@@ -1,4 +1,5 @@
 import {GobCore} from "@/Core/Core"
+import util from "@/Util/Util"
 
 export const GATE_PROXY_NAME = "[PROXY]"
 
@@ -48,7 +49,7 @@ function giveProxyHandler(loaclData: any, localGate: any, fullPath: string[], st
 
             let nowFullPath = [...fullPath, key]
             let handlerContext = {loaclData, localGate, state}
-            return state.gobCore.stimuliBus.receptor("set", nowFullPath, value, null, handlerContext)
+            return state.gobCore.stimuliBus.receptor({type: "set", path: nowFullPath, value: value, origin: null}, handlerContext)
 
         },
         "get": function (target: any, key: any)
@@ -65,10 +66,10 @@ function giveProxyHandler(loaclData: any, localGate: any, fullPath: string[], st
             if (key == "$core") return state.gobCore
 
 
-
             let nowFullPath = [...fullPath, key]
             let handlerContext = {loaclData, localGate, state}
-            return state.gobCore.stimuliBus.receptor("get", nowFullPath, undefined, null, handlerContext)
+
+            return state.gobCore.stimuliBus.receptor({type: "get", path: nowFullPath, value: undefined, origin: null}, handlerContext)
         },
         "deleteProperty": function (target: any, key: any)
         {
@@ -81,52 +82,38 @@ function giveProxyHandler(loaclData: any, localGate: any, fullPath: string[], st
             console.log("called: " + key)
             let nowFullPath = [...fullPath, key]
             let handlerContext = {loaclData, localGate, state}
-            return state.gobCore.stimuliBus.receptor("delete", nowFullPath, null, null, handlerContext)
+
+            return state.gobCore.stimuliBus.receptor( {type: "delete", path: nowFullPath, value: null, origin: null}, handlerContext)
 
         }
     }
 
 
-    function $get(inPath: string[]|string, origin: object | string | null = null)
+    function $get(inPath: string[] | string, origin: object | string | null = null)
     {
-        let path = normalizePath(inPath)
+        let path = util.normalizePath(inPath)
         let nowFullPath = [...fullPath, ...path]
         console.log("$get", nowFullPath)
-        return state.gobCore.stimuliBus.receptor("get", nowFullPath, undefined, origin)
+
+
+        return state.gobCore.stimuliBus.receptor({type: "get", path: nowFullPath, value: undefined, origin: origin})
     }
 
-    function $set(inPath: string[]|string, value: any, origin: object | string | null = null)
+    function $set(inPath: string[] | string, value: any, origin: object | string | null = null)
     {
-        let path = normalizePath(inPath)
+        let path = util.normalizePath(inPath)
         let nowFullPath = [...fullPath, ...path]
         console.log("$set", nowFullPath, value)
-        return state.gobCore.stimuliBus.receptor("set", nowFullPath, value, origin)
+
+        return state.gobCore.stimuliBus.receptor( {type: "set", path: nowFullPath, value: value, origin: origin})
     }
 
-    function $delete(inPath: string[]|string, origin: object | string | null = null)
+    function $delete(inPath: string[] | string, origin: object | string | null = null)
     {
-        let path = normalizePath(inPath)
+        let path = util.normalizePath(inPath)
         let nowFullPath = [...fullPath, ...path]
         console.log("$delete", nowFullPath)
-        return state.gobCore.stimuliBus.receptor("delete", nowFullPath, undefined, origin)
-    }
-}
-
-
-/**
- * 规则化 path，让数组与字符串两种路径都可以用 ["a","b"], "a.b", "a\b\c", "a/b/c"
- * @param {string[] | string} path
- * @returns {string[]}
- */
-function normalizePath(path: string[] | string): string[]
-{
-    if (typeof path === "string")
-    {
-        return path.split(/[\.\\/]/)
-    }
-    else
-    {
-        return path
+        return state.gobCore.stimuliBus.receptor({type: "delete", path: nowFullPath, value: undefined, origin: origin})
     }
 }
 

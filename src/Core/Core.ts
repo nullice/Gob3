@@ -1,26 +1,28 @@
 // Created by nullice on 2018/04/17 - 14:39 
 
-import giveProxyHandler from "./giveProxyHandler"
+import giveProxyHandler from "./Handlers/ProxyHandler/sub/giveProxyHandler"
 import StimuliBus from "./StimuliBus/StimuliBus"
 import FilterManager from "./FilterManager/FilterManager"
-import cloneDeep from "lodash/cloneDeep"
-
-const GOB_CORE_NAME = "[Gob Core]"
+import {Abstract_Handler} from "@/Core/Handlers/Abstract.Handler"
+import ProxyHandler from "@/Core/Handlers/ProxyHandler/ProxyHandler"
+import {GOB_CORE_NAME} from "./Core.consts"
+import Recorder from "@/Core/Recorder/Recorder"
 
 
 /*
 *    GobFactory(state) =>  gob instance = GobProxy: {GobCore + state }
+*
 * */
-
 export class GobCore
 {
     public data: object
     public gate: object
     public proxy: any
     public options: GobOptions
-    public GobFactory = GobFactory
     public stimuliBus = new StimuliBus(this)
     public filterManager = new FilterManager({pathSeparator: "."})
+    public recorder = new Recorder(this)
+    public handler: Abstract_Handler
     public isGob = 3
 
     constructor(options: GobOptions = {})
@@ -28,6 +30,17 @@ export class GobCore
         this.data = {}
         this.gate = {}
         this.options = Object.assign({}, GobCore.DEFAULT_OPTIONS, options)
+
+
+        if (1 == 1)
+        {
+            this.handler = new ProxyHandler()
+        }
+        else
+        {
+            this.handler = new ProxyHandler()
+        }
+
     }
 
     // 默认参数
@@ -72,7 +85,6 @@ export interface GobProxy
     $delete?: (path: string | string[]) => Boolean,
     $core?: GobCore,
 
-
     [propName: string]: any;
 }
 
@@ -82,7 +94,6 @@ interface GobFactory
 
     default: {
         options: GobOptions,
-        cloneDeep: Function,
     }
     GOB_CORE_NAME: string,
     inspect: Function
@@ -94,24 +105,7 @@ let GobFactory = <GobFactory> function (this: any, object: any, options?: object
     let gobCore = new GobCore(options)
 
     // 创建一个代理
-    let proxy: GobProxy = new Proxy(gobCore.data,
-        giveProxyHandler(gobCore.data, gobCore.gate, [], {
-            coreData: gobCore.data,
-            coreGate: gobCore.gate,
-            gobCore,
-            GOB_CORE_NAME
-        })
-    )
-
-
-    // 设置初始值
-    if (object)
-    {
-        for (var key in object)
-        {
-            proxy[key] = object[key]
-        }
-    }
+    let proxy: GobProxy = gobCore.handler.createGobProxy(gobCore, object)
 
     gobCore.proxy = proxy
     return proxy
@@ -121,7 +115,6 @@ let GobFactory = <GobFactory> function (this: any, object: any, options?: object
 // GobFactory 提供的默认设置
 GobFactory.default = {
     options: {},
-    cloneDeep: cloneDeep
 }
 
 // 注册一些方法和常量到 Gob

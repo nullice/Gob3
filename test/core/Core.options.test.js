@@ -13,7 +13,7 @@ describe("Gob options.logType ", () =>
         var gob = Gob({a: 1222}, {logType: {set: false}})
         gob.a = 222
         gob.$set("a", 233)
-        var sign = gob[GOB_CORE_NAME].stimuliBus.getLatestStimuliSign()
+        var sign = gob[GOB_CORE_NAME].recorder.getLatestStimuliInfo()
         expect(sign).toBe(undefined)
     })
 
@@ -22,7 +22,7 @@ describe("Gob options.logType ", () =>
         var gob = Gob({a: 1222}, {})
         gob.a = 222
         gob.a
-        var sign = gob[GOB_CORE_NAME].stimuliBus.getLatestStimuliSign()
+        var sign = gob[GOB_CORE_NAME].recorder.getLatestStimuliInfo()
         expect(sign.type !== "get").toBe(true)
     })
 
@@ -31,7 +31,7 @@ describe("Gob options.logType ", () =>
         var gob = Gob({a: 1222}, {logType: {get: true}})
         gob.a = 222
         gob.a
-        var sign = gob[GOB_CORE_NAME].stimuliBus.getLatestStimuliSign()
+        var sign = gob[GOB_CORE_NAME].recorder.getLatestStimuliInfo()
         expect(sign.type == "get").toBe(true)
         expect(sign.path).toEqual(["a"])
     })
@@ -40,7 +40,7 @@ describe("Gob options.logType ", () =>
     {
         var gob = Gob({a: 1222}, {})
         delete gob.a
-        var sign = gob[GOB_CORE_NAME].stimuliBus.getLatestStimuliSign()
+        var sign = gob[GOB_CORE_NAME].recorder.getLatestStimuliInfo()
         expect(sign.type).toBe("delete")
     })
 
@@ -49,7 +49,7 @@ describe("Gob options.logType ", () =>
     {
         var gob = Gob({a12: 1222}, {logType: {delete: false}})
         delete gob.a12
-        var sign = gob[GOB_CORE_NAME].stimuliBus.getLatestStimuliSign()
+        var sign = gob[GOB_CORE_NAME].recorder.getLatestStimuliInfo()
         expect(sign.type !== "delete").toBe(true)
     })
 

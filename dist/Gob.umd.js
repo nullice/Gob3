@@ -40,6 +40,38 @@
     return Constructor;
   }
 
+  function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+  }
+
+  function _assertThisInitialized(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _possibleConstructorReturn(self, call) {
+    if (call && (typeof call === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized(self);
+  }
+
   function _toConsumableArray(arr) {
     return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
   }
@@ -59,117 +91,6 @@
   function _nonIterableSpread() {
     throw new TypeError("Invalid attempt to spread non-iterable instance");
   }
-
-  /**
-   * 创建一个基于 path 的代理处理器
-   * @param loaclData
-   * @param {string[]} loaclpath
-   * @param {string[]} fullPath
-   * @param {{gobCore: GobCore; GOB_CORE_NAME: string}} state
-   * @returns {{set: (target: any, key: any, value: any) => boolean; get: (target: any, property: any) => (any)}}
-   */
-
-  function giveProxyHandler(loaclData, localGate, fullPath, state) {
-    return {
-      "set": function set(target, key, value) {
-        // 处理特殊属性 [Gob Core]
-        if (key == state.GOB_CORE_NAME) {
-          return true;
-        }
-
-        var nowFullPath = _toConsumableArray(fullPath).concat([key]);
-
-        var handlerContext = {
-          loaclData: loaclData,
-          localGate: localGate,
-          state: state
-        };
-        return state.gobCore.stimuliBus.receptor("set", nowFullPath, value, null, handlerContext);
-      },
-      "get": function get(target, key) {
-        // 处理特殊属性 [Gob Core]
-        if (key == state.GOB_CORE_NAME) {
-          return state.gobCore;
-        }
-
-        if (key == "$get") return $get;
-        if (key == "$set") return $set;
-        if (key == "$delete") return $delete;
-        if (key == "$core") return state.gobCore;
-
-        var nowFullPath = _toConsumableArray(fullPath).concat([key]);
-
-        var handlerContext = {
-          loaclData: loaclData,
-          localGate: localGate,
-          state: state
-        };
-        return state.gobCore.stimuliBus.receptor("get", nowFullPath, undefined, null, handlerContext);
-      },
-      "deleteProperty": function deleteProperty(target, key) {
-        // 处理特殊属性 [Gob Core]
-        if (key == state.GOB_CORE_NAME) {
-          return true;
-        }
-
-        console.log("called: " + key);
-
-        var nowFullPath = _toConsumableArray(fullPath).concat([key]);
-
-        var handlerContext = {
-          loaclData: loaclData,
-          localGate: localGate,
-          state: state
-        };
-        return state.gobCore.stimuliBus.receptor("delete", nowFullPath, null, null, handlerContext);
-      }
-    };
-
-    function $get(inPath) {
-      var origin = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      var path = normalizePath(inPath);
-
-      var nowFullPath = _toConsumableArray(fullPath).concat(_toConsumableArray(path));
-
-      console.log("$get", nowFullPath);
-      return state.gobCore.stimuliBus.receptor("get", nowFullPath, undefined, origin);
-    }
-
-    function $set(inPath, value) {
-      var origin = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-      var path = normalizePath(inPath);
-
-      var nowFullPath = _toConsumableArray(fullPath).concat(_toConsumableArray(path));
-
-      console.log("$set", nowFullPath, value);
-      return state.gobCore.stimuliBus.receptor("set", nowFullPath, value, origin);
-    }
-
-    function $delete(inPath) {
-      var origin = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      var path = normalizePath(inPath);
-
-      var nowFullPath = _toConsumableArray(fullPath).concat(_toConsumableArray(path));
-
-      console.log("$delete", nowFullPath);
-      return state.gobCore.stimuliBus.receptor("delete", nowFullPath, undefined, origin);
-    }
-  }
-  /**
-   * 规则化 path，让数组与字符串两种路径都可以用 ["a","b"], "a.b", "a\b\c", "a/b/c"
-   * @param {string[] | string} path
-   * @returns {string[]}
-   */
-
-
-  function normalizePath(path) {
-    if (typeof path === "string") {
-      return path.split(/[\.\\/]/);
-    } else {
-      return path;
-    }
-  }
-   //# sourceMappingURL=giveProxyHandler.js.map
 
   var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
     return typeof obj;
@@ -1142,459 +1063,1170 @@
        */
   };
 
-  var Util = {
-    rcType: TypeTYP,
-    rcObject: ObjectOBJ,
-    name: "util"
+  var C__Users_nullice_MyProject_GITHUB_Gob3_node_modules_concatMap = function (xs, fn) {
+      var res = [];
+      for (var i = 0; i < xs.length; i++) {
+          var x = fn(xs[i], i);
+          if (isArray(x)) res.push.apply(res, x);
+          else res.push(x);
+      }
+      return res;
   };
-   //# sourceMappingURL=Util.js.map
 
-  var GATE_PROXY_NAME$1 = "[PROXY]";
-  /**
-   * 创建一个基于 path 的代理处理器
-   * @param loaclData
-   * @param {string[]} loaclpath
-   * @param {string[]} fullPath
-   * @param {{gobCore: GobCore; GOB_CORE_NAME: string}} state
-   * @returns {{set: (target: any, key: any, value: any) => boolean; get: (target: any, property: any) => (any)}}
-   */
+  var isArray = Array.isArray || function (xs) {
+      return Object.prototype.toString.call(xs) === '[object Array]';
+  };
 
-  function giveProxyHandler$1(loaclData, localGate, fullPath, state) {
-    return {
-      "set": function set(target, key, value) {
-        // 处理特殊属性 [Gob Core]
-        if (key == state.GOB_CORE_NAME) {
-          return true;
+  var C__Users_nullice_MyProject_GITHUB_Gob3_node_modules_balancedMatch = balanced;
+  function balanced(a, b, str) {
+    if (a instanceof RegExp) a = maybeMatch(a, str);
+    if (b instanceof RegExp) b = maybeMatch(b, str);
+
+    var r = range(a, b, str);
+
+    return r && {
+      start: r[0],
+      end: r[1],
+      pre: str.slice(0, r[0]),
+      body: str.slice(r[0] + a.length, r[1]),
+      post: str.slice(r[1] + b.length)
+    };
+  }
+
+  function maybeMatch(reg, str) {
+    var m = str.match(reg);
+    return m ? m[0] : null;
+  }
+
+  balanced.range = range;
+  function range(a, b, str) {
+    var begs, beg, left, right, result;
+    var ai = str.indexOf(a);
+    var bi = str.indexOf(b, ai + 1);
+    var i = ai;
+
+    if (ai >= 0 && bi > 0) {
+      begs = [];
+      left = str.length;
+
+      while (i >= 0 && !result) {
+        if (i == ai) {
+          begs.push(i);
+          ai = str.indexOf(a, i + 1);
+        } else if (begs.length == 1) {
+          result = [ begs.pop(), bi ];
+        } else {
+          beg = begs.pop();
+          if (beg < left) {
+            left = beg;
+            right = bi;
+          }
+
+          bi = str.indexOf(b, i + 1);
         }
 
-        var nowFullPath = _toConsumableArray(fullPath).concat([key]);
-
-        var handlerContext = {
-          loaclData: loaclData,
-          localGate: localGate,
-          state: state
-        };
-        return state.gobCore.stimuliBus.receptor("set", nowFullPath, value, null, handlerContext);
-      },
-      "get": function get(target, key) {
-        // 处理特殊属性 [Gob Core]
-        if (key == state.GOB_CORE_NAME) {
-          return state.gobCore;
-        }
-
-        if (key == "$get") return $get;
-        if (key == "$set") return $set;
-        if (key == "$delete") return $delete;
-        if (key == "$core") return state.gobCore;
-
-        var nowFullPath = _toConsumableArray(fullPath).concat([key]);
-
-        var handlerContext = {
-          loaclData: loaclData,
-          localGate: localGate,
-          state: state
-        };
-        return state.gobCore.stimuliBus.receptor("get", nowFullPath, undefined, null, handlerContext);
-      },
-      "deleteProperty": function deleteProperty(target, key) {
-        // 处理特殊属性 [Gob Core]
-        if (key == state.GOB_CORE_NAME) {
-          return true;
-        }
-
-        console.log("called: " + key);
-
-        var nowFullPath = _toConsumableArray(fullPath).concat([key]);
-
-        var handlerContext = {
-          loaclData: loaclData,
-          localGate: localGate,
-          state: state
-        };
-        return state.gobCore.stimuliBus.receptor("delete", nowFullPath, null, null, handlerContext);
+        i = ai < bi && ai >= 0 ? ai : bi;
       }
+
+      if (begs.length) {
+        result = [ left, right ];
+      }
+    }
+
+    return result;
+  }
+
+  var C__Users_nullice_MyProject_GITHUB_Gob3_node_modules_braceExpansion = expandTop;
+
+  var escSlash = '\0SLASH'+Math.random()+'\0';
+  var escOpen = '\0OPEN'+Math.random()+'\0';
+  var escClose = '\0CLOSE'+Math.random()+'\0';
+  var escComma = '\0COMMA'+Math.random()+'\0';
+  var escPeriod = '\0PERIOD'+Math.random()+'\0';
+
+  function numeric(str) {
+    return parseInt(str, 10) == str
+      ? parseInt(str, 10)
+      : str.charCodeAt(0);
+  }
+
+  function escapeBraces(str) {
+    return str.split('\\\\').join(escSlash)
+              .split('\\{').join(escOpen)
+              .split('\\}').join(escClose)
+              .split('\\,').join(escComma)
+              .split('\\.').join(escPeriod);
+  }
+
+  function unescapeBraces(str) {
+    return str.split(escSlash).join('\\')
+              .split(escOpen).join('{')
+              .split(escClose).join('}')
+              .split(escComma).join(',')
+              .split(escPeriod).join('.');
+  }
+
+
+  // Basically just str.split(","), but handling cases
+  // where we have nested braced sections, which should be
+  // treated as individual members, like {a,{b,c},d}
+  function parseCommaParts(str) {
+    if (!str)
+      return [''];
+
+    var parts = [];
+    var m = C__Users_nullice_MyProject_GITHUB_Gob3_node_modules_balancedMatch('{', '}', str);
+
+    if (!m)
+      return str.split(',');
+
+    var pre = m.pre;
+    var body = m.body;
+    var post = m.post;
+    var p = pre.split(',');
+
+    p[p.length-1] += '{' + body + '}';
+    var postParts = parseCommaParts(post);
+    if (post.length) {
+      p[p.length-1] += postParts.shift();
+      p.push.apply(p, postParts);
+    }
+
+    parts.push.apply(parts, p);
+
+    return parts;
+  }
+
+  function expandTop(str) {
+    if (!str)
+      return [];
+
+    // I don't know why Bash 4.3 does this, but it does.
+    // Anything starting with {} will have the first two bytes preserved
+    // but *only* at the top level, so {},a}b will not expand to anything,
+    // but a{},b}c will be expanded to [a}c,abc].
+    // One could argue that this is a bug in Bash, but since the goal of
+    // this module is to match Bash's rules, we escape a leading {}
+    if (str.substr(0, 2) === '{}') {
+      str = '\\{\\}' + str.substr(2);
+    }
+
+    return expand(escapeBraces(str), true).map(unescapeBraces);
+  }
+
+  function embrace(str) {
+    return '{' + str + '}';
+  }
+  function isPadded(el) {
+    return /^-?0\d/.test(el);
+  }
+
+  function lte(i, y) {
+    return i <= y;
+  }
+  function gte(i, y) {
+    return i >= y;
+  }
+
+  function expand(str, isTop) {
+    var expansions = [];
+
+    var m = C__Users_nullice_MyProject_GITHUB_Gob3_node_modules_balancedMatch('{', '}', str);
+    if (!m || /\$$/.test(m.pre)) return [str];
+
+    var isNumericSequence = /^-?\d+\.\.-?\d+(?:\.\.-?\d+)?$/.test(m.body);
+    var isAlphaSequence = /^[a-zA-Z]\.\.[a-zA-Z](?:\.\.-?\d+)?$/.test(m.body);
+    var isSequence = isNumericSequence || isAlphaSequence;
+    var isOptions = m.body.indexOf(',') >= 0;
+    if (!isSequence && !isOptions) {
+      // {a},b}
+      if (m.post.match(/,.*\}/)) {
+        str = m.pre + '{' + m.body + escClose + m.post;
+        return expand(str);
+      }
+      return [str];
+    }
+
+    var n;
+    if (isSequence) {
+      n = m.body.split(/\.\./);
+    } else {
+      n = parseCommaParts(m.body);
+      if (n.length === 1) {
+        // x{{a,b}}y ==> x{a}y x{b}y
+        n = expand(n[0], false).map(embrace);
+        if (n.length === 1) {
+          var post = m.post.length
+            ? expand(m.post, false)
+            : [''];
+          return post.map(function(p) {
+            return m.pre + n[0] + p;
+          });
+        }
+      }
+    }
+
+    // at this point, n is the parts, and we know it's not a comma set
+    // with a single entry.
+
+    // no need to expand pre, since it is guaranteed to be free of brace-sets
+    var pre = m.pre;
+    var post = m.post.length
+      ? expand(m.post, false)
+      : [''];
+
+    var N;
+
+    if (isSequence) {
+      var x = numeric(n[0]);
+      var y = numeric(n[1]);
+      var width = Math.max(n[0].length, n[1].length);
+      var incr = n.length == 3
+        ? Math.abs(numeric(n[2]))
+        : 1;
+      var test = lte;
+      var reverse = y < x;
+      if (reverse) {
+        incr *= -1;
+        test = gte;
+      }
+      var pad = n.some(isPadded);
+
+      N = [];
+
+      for (var i = x; test(i, y); i += incr) {
+        var c;
+        if (isAlphaSequence) {
+          c = String.fromCharCode(i);
+          if (c === '\\')
+            c = '';
+        } else {
+          c = String(i);
+          if (pad) {
+            var need = width - c.length;
+            if (need > 0) {
+              var z = new Array(need + 1).join('0');
+              if (i < 0)
+                c = '-' + z + c.slice(1);
+              else
+                c = z + c;
+            }
+          }
+        }
+        N.push(c);
+      }
+    } else {
+      N = C__Users_nullice_MyProject_GITHUB_Gob3_node_modules_concatMap(n, function(el) { return expand(el, false) });
+    }
+
+    for (var j = 0; j < N.length; j++) {
+      for (var k = 0; k < post.length; k++) {
+        var expansion = pre + N[j] + post[k];
+        if (!isTop || isSequence || expansion)
+          expansions.push(expansion);
+      }
+    }
+
+    return expansions;
+  }
+
+  var minimatch_1 = minimatch;
+  minimatch.Minimatch = Minimatch;
+  var path = {
+    sep: "/"
+  };
+  var GLOBSTAR = minimatch.GLOBSTAR = Minimatch.GLOBSTAR = {};
+
+
+
+  var plTypes = {
+    "!": {
+      open: "(?:(?!(?:",
+      close: "))[^/]*?)"
+    },
+    "?": {
+      open: "(?:",
+      close: ")?"
+    },
+    "+": {
+      open: "(?:",
+      close: ")+"
+    },
+    "*": {
+      open: "(?:",
+      close: ")*"
+    },
+    "@": {
+      open: "(?:",
+      close: ")"
+    } // any single thing other than /
+    // don't need to escape / when using new RegExp()
+
+  };
+  var qmark = "[^/]"; // * => any number of characters
+
+  var star = qmark + "*?"; // ** when dots are allowed.  Anything goes, except .. and .
+  // not (^ or / followed by one or two dots followed by $ or /),
+  // followed by anything, any number of times.
+
+  var twoStarDot = "(?:(?!(?:\\\/|^)(?:\\.{1,2})($|\\\/)).)*?"; // not a ^ or / followed by a dot,
+  // followed by anything, any number of times.
+
+  var twoStarNoDot = "(?:(?!(?:\\\/|^)\\.).)*?"; // characters that need to be escaped in RegExp.
+
+  var reSpecials = charSet("().*{}+?[]^$\\!"); // "abc" -> { a:true, b:true, c:true }
+
+  function charSet(s) {
+    return s.split("").reduce(function (set, c) {
+      set[c] = true;
+      return set;
+    }, {});
+  } // normalizes slashes.
+
+
+  var slashSplit = /\/+/;
+  minimatch.filter = filter;
+
+  function filter(pattern, options) {
+    options = options || {};
+    return function (p, i, list) {
+      return minimatch(p, pattern, options);
+    };
+  }
+
+  function ext(a, b) {
+    a = a || {};
+    b = b || {};
+    var t = {};
+    Object.keys(b).forEach(function (k) {
+      t[k] = b[k];
+    });
+    Object.keys(a).forEach(function (k) {
+      t[k] = a[k];
+    });
+    return t;
+  }
+
+  minimatch.defaults = function (def) {
+    if (!def || !Object.keys(def).length) return minimatch;
+    var orig = minimatch;
+
+    var m = function minimatch(p, pattern, options) {
+      return orig.minimatch(p, pattern, ext(def, options));
     };
 
-    function $get(inPath) {
-      var origin = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      var path = normalizePath$1(inPath);
+    m.Minimatch = function Minimatch(pattern, options) {
+      return new orig.Minimatch(pattern, ext(def, options));
+    };
 
-      var nowFullPath = _toConsumableArray(fullPath).concat(_toConsumableArray(path));
+    return m;
+  };
 
-      console.log("$get", nowFullPath);
-      return state.gobCore.stimuliBus.receptor("get", nowFullPath, undefined, origin);
+  Minimatch.defaults = function (def) {
+    if (!def || !Object.keys(def).length) return Minimatch;
+    return minimatch.defaults(def).Minimatch;
+  };
+
+  function minimatch(p, pattern, options) {
+    if (typeof pattern !== "string") {
+      throw new TypeError("glob pattern string required");
     }
 
-    function $set(inPath, value) {
-      var origin = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-      var path = normalizePath$1(inPath);
+    if (!options) options = {}; // shortcut: comments match nothing.
 
-      var nowFullPath = _toConsumableArray(fullPath).concat(_toConsumableArray(path));
+    if (!options.nocomment && pattern.charAt(0) === "#") {
+      return false;
+    } // "" only matches ""
 
-      console.log("$set", nowFullPath, value);
-      return state.gobCore.stimuliBus.receptor("set", nowFullPath, value, origin);
-    }
 
-    function $delete(inPath) {
-      var origin = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-      var path = normalizePath$1(inPath);
-
-      var nowFullPath = _toConsumableArray(fullPath).concat(_toConsumableArray(path));
-
-      console.log("$delete", nowFullPath);
-      return state.gobCore.stimuliBus.receptor("delete", nowFullPath, undefined, origin);
-    }
+    if (pattern.trim() === "") return p === "";
+    return new Minimatch(pattern, options).match(p);
   }
-  /**
-   * 规则化 path，让数组与字符串两种路径都可以用 ["a","b"], "a.b", "a\b\c", "a/b/c"
-   * @param {string[] | string} path
-   * @returns {string[]}
-   */
 
-
-  function normalizePath$1(path) {
-    if (typeof path === "string") {
-      return path.split(/[\.\\/]/);
-    } else {
-      return path;
+  function Minimatch(pattern, options) {
+    if (!(this instanceof Minimatch)) {
+      return new Minimatch(pattern, options);
     }
+
+    if (typeof pattern !== "string") {
+      throw new TypeError("glob pattern string required");
+    }
+
+    if (!options) options = {};
+    pattern = pattern.trim(); // windows support: need to use /, not \
+
+    if (path.sep !== "/") {
+      pattern = pattern.split(path.sep).join("/");
+    }
+
+    this.options = options;
+    this.set = [];
+    this.pattern = pattern;
+    this.regexp = null;
+    this.negate = false;
+    this.comment = false;
+    this.empty = false; // make the set of regexps etc.
+
+    this.make();
   }
-   //# sourceMappingURL=giveProxyHandler.js.map
 
-  var rcType = Util.rcType;
-  var rcObject = Util.rcObject;
-  /**
-   * 收到 set 刺激后对 gob 实例进行的操作
-   * @param {string[]} fullPath
-   * @param value
-   * @param {string} key
-   * @param {HandlerContext} handlerContext handler
-   */
+  Minimatch.prototype.debug = function () {};
 
-  function set(fullPath, value, key, handlerContext) {
-    var valueType = rcType.getType(value);
-    console.log("[set]", "fullPath:", fullPath, {
-      valueType: valueType,
-      key: key,
-      value: value
+  Minimatch.prototype.make = make;
+
+  function make() {
+    // don't do it more than once.
+    if (this._made) return;
+    var pattern = this.pattern;
+    var options = this.options; // empty patterns and comments match nothing.
+
+    if (!options.nocomment && pattern.charAt(0) === "#") {
+      this.comment = true;
+      return;
+    }
+
+    if (!pattern) {
+      this.empty = true;
+      return;
+    } // step 1: figure out negation, etc.
+
+
+    this.parseNegate(); // step 2: expand braces
+
+    var set = this.globSet = this.braceExpand();
+    if (options.debug) this.debug = console.error;
+    this.debug(this.pattern, set); // step 3: now we have a set, so turn each one into a series of path-portion
+    // matching patterns.
+    // These will be regexps, except in the case of "**", which is
+    // set to the GLOBSTAR object for globstar behavior,
+    // and will not contain any / characters
+
+    set = this.globParts = set.map(function (s) {
+      return s.split(slashSplit);
     });
+    this.debug(this.pattern, set); // glob --> regexps
 
-    if (valueType === "object" || valueType === "array") {
-      // 写入值到 data
-      handlerContext.loaclData[key] = value; // 创建 gate
+    set = set.map(function (s, si, set) {
+      return s.map(this.parse, this);
+    }, this);
+    this.debug(this.pattern, set); // filter out everything that didn't compile properly.
 
-      creatGate(value, [key], fullPath, handlerContext); // 遍历值来创建 gate
+    set = set.filter(function (s) {
+      return s.indexOf(false) === -1;
+    });
+    this.debug(this.pattern, set);
+    this.set = set;
+  }
 
-      rcObject.pathEach(value, function (item, path) {
-        if (_typeof(item) === "object") {
-          creatGate(item, [key].concat(_toConsumableArray(path)), _toConsumableArray(fullPath).concat(_toConsumableArray(path)), handlerContext);
-        }
-      }, creatCycleGate);
-    } else {
-      handlerContext.loaclData[key] = value;
+  Minimatch.prototype.parseNegate = parseNegate;
+
+  function parseNegate() {
+    var pattern = this.pattern;
+    var negate = false;
+    var options = this.options;
+    var negateOffset = 0;
+    if (options.nonegate) return;
+
+    for (var i = 0, l = pattern.length; i < l && pattern.charAt(i) === '!'; i++) {
+      negate = !negate;
+      negateOffset++;
     }
 
-    return true;
-    /**
-     * 为循环引用创建 Gate
-     * @param {Object} object 循环引用对象
-     * @param {string[]} path 发生循环引用的对象的 path
-     * @param {string[]} cyclePath 循环引用目标的 path
-     */
+    if (negateOffset) this.pattern = pattern.substr(negateOffset);
+    this.negate = negate;
+  } // Brace expansion:
+  // a{b,c}d -> abd acd
+  // a{b,}c -> abc ac
+  // a{0..3}d -> a0d a1d a2d a3d
+  // a{b,c{d,e}f}g -> abg acdfg acefg
+  // a{b,c}d{e,f}g -> abdeg acdeg abdeg abdfg
+  //
+  // Invalid sets are not expanded.
+  // a{2..}b -> a{2..}b
+  // a{b}c -> a{b}c
 
-    function creatCycleGate(object, path, cyclePath) {
-      // console.log("  [cycle]", object, path, cyclePath)
-      var cycleObject;
 
-      if (cyclePath.length == 0) {
-        cycleObject = handlerContext.localGate[key];
+  minimatch.braceExpand = function (pattern, options) {
+    return braceExpand(pattern, options);
+  };
+
+  Minimatch.prototype.braceExpand = braceExpand;
+
+  function braceExpand(pattern, options) {
+    if (!options) {
+      if (this instanceof Minimatch) {
+        options = this.options;
       } else {
-        cycleObject = rcObject.getObjectValueByNames(handlerContext.localGate, [key, cyclePath], null);
-      } // console.log("  [cycle cycleObject]", cycleObject)
-
-
-      rcObject.setObjectValueByNames(handlerContext.localGate, [key].concat(_toConsumableArray(path)), cycleObject);
-    }
-  }
-  /**
-   * 在这个 Handler 的 localData 上根据 localPath 设置 Gate
-   * @param {object} inData
-   * @param {string[]} targetPath
-   * @param {string[]} fullPath
-   * @param handlerContext
-   * @returns {Gate}
-   */
-
-
-  function creatGate(inData, targetPath, fullPath, handlerContext) {
-    var gate = {};
-    var proxy = new Proxy(inData, giveProxyHandler$1(inData, gate, fullPath, handlerContext.state));
-    gate[GATE_PROXY_NAME$1] = proxy;
-    rcObject.setObjectValueByNames(handlerContext.localGate, targetPath, gate);
-    return gate;
-  }
-   //# sourceMappingURL=set.js.map
-
-  var rcType$1 = Util.rcType;
-  /**
-   *
-   * @param {string[]} fullPath
-   * @param {string} key
-   * @param {HandlerContext} handlerContext
-   * @returns {any}
-   */
-
-  function get(fullPath, key, handlerContext) {
-    // 获取原始值
-    // let value = rcObject.getObjectValueByNames(loaclData, [key], null)
-    var value = handlerContext.loaclData[key];
-    console.log("[get]", fullPath, {
-      loaclData: handlerContext.loaclData,
-      key: key
-    }); // 根据值属性处理读出值
-
-    var valueType = rcType$1.getType(value);
-    console.log("  [get value]", value, valueType);
-
-    if (valueType === "object" || valueType === "array") {
-      console.log("  [find gates]", fullPath);
-      var gate = handlerContext.localGate[key];
-      return gate[GATE_PROXY_NAME$1];
-    }
-
-    {
-      console.log("  return value", value);
-      return value;
-    }
-  }
-   //# sourceMappingURL=get.js.map
-
-  var rcType$2 = Util.rcType;
-  /**
-   * 收到 delete 刺激后对 gob 实例进行的操作
-   * @param {string[]} fullPath
-   * @param value
-   * @param {string} key
-   * @param {HandlerContext} handlerContext handler
-   */
-
-  function del(fullPath, value, key, handlerContext) {
-    var valueType = rcType$2.getType(value);
-    console.log("[del]", "fullPath:", fullPath, {
-      key: key
-    });
-    return delete handlerContext.loaclData[key];
-  }
-   //# sourceMappingURL=delete.js.map
-
-  // Created by nullice on 2018/05/02 - 14:34 
-  var latest = null;
-  /**
-   * 刺激检查，忽略一些刺激不记录到 stimuliLog ，比如忽略数组添加成员时对 length 的 set
-   * @param {string[]} path
-   * @param {HandlerContext} handlerContext
-   * @returns {Boolean}
-   */
-
-  function igonreSideEffect(stimuliType, path, handlerContext) {
-    var loaclDataIsArray = Array.isArray(handlerContext.loaclData);
-
-    if (loaclDataIsArray) {
-      if (path[path.length - 1] === "length") {
-        if (latest) {
-          if (latest.stimuliType === "set" && latest.loaclDataIsArray == true) {
-            // 上一次刺激不是设置 length
-            if (latest.path && latest.path[latest.path.length - 1] !== "length") {
-              _logLatest(stimuliType, path, loaclDataIsArray);
-
-              return true;
-            }
-          }
-        }
+        options = {};
       }
     }
 
-    _logLatest(stimuliType, path, loaclDataIsArray);
+    pattern = typeof pattern === "undefined" ? this.pattern : pattern;
 
-    return false;
-  }
-  /**
-   * 记录本次刺激特征，为下一次刺激检查备用
-   * @param {string} stimuliType
-   * @param {string[]} path
-   * @param {boolean} loaclDataIsArray
-   * @private
-   */
-
-
-  function _logLatest(stimuliType, path, loaclDataIsArray) {
-    latest = {
-      stimuliType: stimuliType,
-      path: path,
-      loaclDataIsArray: loaclDataIsArray
-    };
-  }
-   //# sourceMappingURL=ignore-side-effect.js.map
-
-  var rcObject$1 = Util.rcObject;
-  /**
-   * 刺激总线
-   */
-
-  var StimuliBus =
-  /*#__PURE__*/
-  function () {
-    function StimuliBus(gobCore) {
-      _classCallCheck(this, StimuliBus);
-
-      this.stimuliLog = {
-        changes: [],
-        visits: [],
-        indexes: {
-          set: 0,
-          get: 0,
-          delete: 0,
-          all: 0
-        },
-        latestPath: null,
-        latestType: null
-      };
-      this.gobCore = gobCore;
+    if (typeof pattern === "undefined") {
+      throw new TypeError("undefined pattern");
     }
-    /**
-     * 总线的刺激受体，根据接收的刺激
-     * @param {string} stimuliType 刺激类型 （'get','set'.'delete'）
-     * @param {string[]} path 路径
-     * @param {any} value 值
-     * @param {object | string} origin 来源
-     * @param {HandlerContext} handlerContext 上下文
-     * @return {any}
-     */
+
+    if (options.nobrace || !pattern.match(/\{.*\}/)) {
+      // shortcut. no need to expand.
+      return [pattern];
+    }
+
+    return C__Users_nullice_MyProject_GITHUB_Gob3_node_modules_braceExpansion(pattern);
+  } // parse a component of the expanded set.
+  // At this point, no pattern may contain "/" in it
+  // so we're going to return a 2d array, where each entry is the full
+  // pattern, split on '/', and then turned into a regular expression.
+  // A regexp is made at the end which joins each array with an
+  // escaped /, and another full one which joins each regexp with |.
+  //
+  // Following the lead of Bash 4.1, note that "**" only has special meaning
+  // when it is the *only* thing in a path portion.  Otherwise, any series
+  // of * is equivalent to a single *.  Globstar behavior is enabled by
+  // default, and can be disabled by setting options.noglobstar.
 
 
-    _createClass(StimuliBus, [{
-      key: "receptor",
-      value: function receptor(stimuliType, path, value, origin, handlerContext) {
-        console.log("[receptor]", handlerContext ? "<Handler>" : "<noHandler>", stimuliType, path); // 记录上下文
+  Minimatch.prototype.parse = parse;
+  var SUBPARSE = {};
 
-        if (handlerContext) {
-          // 是否忽略一些副作用产生的刺激
-          if (!igonreSideEffect(stimuliType, path, handlerContext)) {
-            // console.log("Ignore IgnoreSideEffect", handlerContext)
-            this.recordStimuli(stimuliType, path, value, origin);
-          }
-        }
+  function parse(pattern, isSub) {
+    if (pattern.length > 1024 * 64) {
+      throw new TypeError("pattern is too long");
+    }
 
-        switch (stimuliType) {
-          case "get":
-            {
-              if (!handlerContext) {
-                return rcObject$1.getObjectValueByNames(this.gobCore.proxy, path, null);
-              } else {
-                return get(path, path[path.length - 1], handlerContext);
-              }
-            }
+    var options = this.options; // shortcuts
 
-          case "set":
-            {
-              if (!handlerContext) {
-                return rcObject$1.setObjectValueByNames(this.gobCore.proxy, path, value);
-              } else {
-                return set(path, value, path[path.length - 1], handlerContext);
-              }
-            }
+    if (!options.noglobstar && pattern === "**") return GLOBSTAR;
+    if (pattern === "") return "";
+    var re = "";
+    var hasMagic = !!options.nocase;
+    var escaping = false; // ? => one single character
 
-          case "delete":
-            {
-              if (!handlerContext) {
-                return rcObject$1.deleteObjectValueByNames(this.gobCore.proxy, path);
-              } else {
-                return del(path, value, path[path.length - 1], handlerContext);
-              }
-            }
+    var patternListStack = [];
+    var negativeLists = [];
+    var stateChar;
+    var inClass = false;
+    var reClassStart = -1;
+    var classStart = -1; // . and .. never match anything that doesn't start with .,
+    // even when options.dot is set.
+
+    var patternStart = pattern.charAt(0) === "." ? "" // anything
+    // not (start or / followed by . or .. followed by / or end)
+    : options.dot ? "(?!(?:^|\\\/)\\.{1,2}(?:$|\\\/))" : "(?!\\.)";
+    var self = this;
+
+    function clearStateChar() {
+      if (stateChar) {
+        // we had some state-tracking character
+        // that wasn't consumed by this pass.
+        switch (stateChar) {
+          case "*":
+            re += star;
+            hasMagic = true;
+            break;
+
+          case "?":
+            re += qmark;
+            hasMagic = true;
+            break;
 
           default:
-
+            re += "\\" + stateChar;
+            break;
         }
+
+        self.debug("clearStateChar %j %j", stateChar, re);
+        stateChar = false;
       }
-      /**
-       * 记录刺激
-       * @param {string} stimuliType
-       * @param {string[]} path
-       * @param value
-       * @param {object | string | null} origin
-       */
+    }
 
-    }, {
-      key: "recordStimuli",
-      value: function recordStimuli(stimuliType, path, value, origin) {
-        var _this = this;
+    for (var i = 0, len = pattern.length, c; i < len && (c = pattern.charAt(i)); i++) {
+      this.debug("%s\t%s %s %j", pattern, i, re, c); // skip over any that are escaped.
 
-        // 如果禁用记录，则立即返回
-        if (this.gobCore.options.disableLog === true) {
-          return;
-        }
+      if (escaping && reSpecials[c]) {
+        re += "\\" + c;
+        escaping = false;
+        continue;
+      }
 
-        if (this.gobCore.options.logType) {
-          if (this.gobCore.options.logType[stimuliType] === false) {
-            return;
+      switch (c) {
+        case "/":
+          // completely not allowed, even escaped.
+          // Should already be path-split by now.
+          return false;
+
+        case "\\":
+          clearStateChar();
+          escaping = true;
+          continue;
+        // the various stateChar values
+        // for the "extglob" stuff.
+
+        case "?":
+        case "*":
+        case "+":
+        case "@":
+        case "!":
+          this.debug("%s\t%s %s %j <-- stateChar", pattern, i, re, c); // all of those are literals inside a class, except that
+          // the glob [!a] means [^a] in regexp
+
+          if (inClass) {
+            this.debug("  in class");
+            if (c === "!" && i === classStart + 1) c = "^";
+            re += c;
+            continue;
+          } // if we already have a stateChar, then it means
+          // that there was something like ** or +? in there.
+          // Handle the stateChar, then proceed with this one.
+
+
+          self.debug("call clearStateChar %j", stateChar);
+          clearStateChar();
+          stateChar = c; // if extglob is disabled, then +(asdf|foo) isn't a thing.
+          // just clear the statechar *now*, rather than even diving into
+          // the patternList stuff.
+
+          if (options.noext) clearStateChar();
+          continue;
+
+        case "(":
+          if (inClass) {
+            re += "(";
+            continue;
           }
-        } // 基本记录
+
+          if (!stateChar) {
+            re += "\\(";
+            continue;
+          }
+
+          patternListStack.push({
+            type: stateChar,
+            start: i - 1,
+            reStart: re.length,
+            open: plTypes[stateChar].open,
+            close: plTypes[stateChar].close
+          }); // negation is (?:(?!js)[^/]*)
+
+          re += stateChar === "!" ? "(?:(?!(?:" : "(?:";
+          this.debug("plType %j %j", stateChar, re);
+          stateChar = false;
+          continue;
+
+        case ")":
+          if (inClass || !patternListStack.length) {
+            re += "\\)";
+            continue;
+          }
+
+          clearStateChar();
+          hasMagic = true;
+          var pl = patternListStack.pop(); // negation is (?:(?!js)[^/]*)
+          // The others are (?:<pattern>)<type>
+
+          re += pl.close;
+
+          if (pl.type === "!") {
+            negativeLists.push(pl);
+          }
+
+          pl.reEnd = re.length;
+          continue;
+
+        case "|":
+          if (inClass || !patternListStack.length || escaping) {
+            re += "\\|";
+            escaping = false;
+            continue;
+          }
+
+          clearStateChar();
+          re += "|";
+          continue;
+        // these are mostly the same in regexp and glob
+
+        case "[":
+          // swallow any state-tracking char before the [
+          clearStateChar();
+
+          if (inClass) {
+            re += "\\" + c;
+            continue;
+          }
+
+          inClass = true;
+          classStart = i;
+          reClassStart = re.length;
+          re += c;
+          continue;
+
+        case "]":
+          //  a right bracket shall lose its special
+          //  meaning and represent itself in
+          //  a bracket expression if it occurs
+          //  first in the list.  -- POSIX.2 2.8.3.2
+          if (i === classStart + 1 || !inClass) {
+            re += "\\" + c;
+            escaping = false;
+            continue;
+          } // handle the case where we left a class open.
+          // "[z-a]" is valid, equivalent to "\[z-a\]"
 
 
-        this.stimuliLog.latestPath = path;
-        this.stimuliLog.latestType = stimuliType;
-        var index = this.stimuliLog.indexes.all++;
-        var typeIndex = this.stimuliLog.indexes[stimuliType]++; // 详细记录
+          if (inClass) {
+            // split where the last [ was, make sure we don't have
+            // an invalid re. if so, re-walk the contents of the
+            // would-be class to re-translate any characters that
+            // were passed through as-is
+            // TODO: It would probably be faster to determine this
+            // without a try/catch and a new RegExp, but it's tricky
+            // to do safely.  For now, this is safe and works.
+            var cs = pattern.substring(classStart + 1, i);
 
-        var logFunc = function logFunc() {
-          var stimuli = {
-            type: stimuliType,
-            path: path,
-            value: _this.gobCore.GobFactory.default.cloneDeep(value),
-            origin: origin,
-            info: {
-              index: index,
-              typeIndex: typeIndex
+            try {
+            } catch (er) {
+              // not a valid class!
+              var sp = this.parse(cs, SUBPARSE);
+              re = re.substr(0, reClassStart) + "\\[" + sp[0] + "\\]";
+              hasMagic = hasMagic || sp[1];
+              inClass = false;
+              continue;
             }
-          };
-          console.log("[Stimuli]", stimuli);
+          } // finish up the class.
 
-          if (stimuliType === "set" || stimuliType === "delete") {
-            _this.stimuliLog.changes.push(stimuli);
-          } else {
-            _this.stimuliLog.visits.push(stimuli);
+
+          hasMagic = true;
+          inClass = false;
+          re += c;
+          continue;
+
+        default:
+          // swallow any state char that wasn't consumed
+          clearStateChar();
+
+          if (escaping) {
+            // no need
+            escaping = false;
+          } else if (reSpecials[c] && !(c === "^" && inClass)) {
+            re += "\\";
           }
-        };
 
-        if (this.gobCore.options.syncLog === true) {
-          // 同步记录
-          logFunc();
+          re += c;
+      } // switch
+
+    } // for
+    // handle the case where we left a class open.
+    // "[abc" is valid, equivalent to "\[abc"
+
+
+    if (inClass) {
+      // split where the last [ was, and escape it
+      // this is a huge pita.  We now have to re-walk
+      // the contents of the would-be class to re-translate
+      // any characters that were passed through as-is
+      cs = pattern.substr(classStart + 1);
+      sp = this.parse(cs, SUBPARSE);
+      re = re.substr(0, reClassStart) + "\\[" + sp[0];
+      hasMagic = hasMagic || sp[1];
+    } // handle the case where we had a +( thing at the *end*
+    // of the pattern.
+    // each pattern list stack adds 3 chars, and we need to go through
+    // and escape any | chars that were passed through as-is for the regexp.
+    // Go through and escape them, taking care not to double-escape any
+    // | chars that were already escaped.
+
+
+    for (pl = patternListStack.pop(); pl; pl = patternListStack.pop()) {
+      var tail = re.slice(pl.reStart + pl.open.length);
+      this.debug("setting tail", re, pl); // maybe some even number of \, then maybe 1 \, followed by a |
+
+      tail = tail.replace(/((?:\\{2}){0,64})(\\?)\|/g, function (_, $1, $2) {
+        if (!$2) {
+          // the | isn't already escaped, so escape it.
+          $2 = "\\";
+        } // need to escape all those slashes *again*, without escaping the
+        // one that we need for escaping the | character.  As it works out,
+        // escaping an even number of slashes can be done by simply repeating
+        // it exactly after itself.  That's why this trick works.
+        //
+        // I am sorry that you have to see this.
+
+
+        return $1 + $1 + $2 + "|";
+      });
+      this.debug("tail=%j\n   %s", tail, tail, pl, re);
+      var t = pl.type === "*" ? star : pl.type === "?" ? qmark : "\\" + pl.type;
+      hasMagic = true;
+      re = re.slice(0, pl.reStart) + t + "\\(" + tail;
+    } // handle trailing things that only matter at the very end.
+
+
+    clearStateChar();
+
+    if (escaping) {
+      // trailing \\
+      re += "\\\\";
+    } // only need to apply the nodot start if the re starts with
+    // something that could conceivably capture a dot
+
+
+    var addPatternStart = false;
+
+    switch (re.charAt(0)) {
+      case ".":
+      case "[":
+      case "(":
+        addPatternStart = true;
+    } // Hack to work around lack of negative lookbehind in JS
+    // A pattern like: *.!(x).!(y|z) needs to ensure that a name
+    // like 'a.xyz.yz' doesn't match.  So, the first negative
+    // lookahead, has to look ALL the way ahead, to the end of
+    // the pattern.
+
+
+    for (var n = negativeLists.length - 1; n > -1; n--) {
+      var nl = negativeLists[n];
+      var nlBefore = re.slice(0, nl.reStart);
+      var nlFirst = re.slice(nl.reStart, nl.reEnd - 8);
+      var nlLast = re.slice(nl.reEnd - 8, nl.reEnd);
+      var nlAfter = re.slice(nl.reEnd);
+      nlLast += nlAfter; // Handle nested stuff like *(*.js|!(*.json)), where open parens
+      // mean that we should *not* include the ) in the bit that is considered
+      // "after" the negated section.
+
+      var openParensBefore = nlBefore.split("(").length - 1;
+      var cleanAfter = nlAfter;
+
+      for (i = 0; i < openParensBefore; i++) {
+        cleanAfter = cleanAfter.replace(/\)[+*?]?/, "");
+      }
+
+      nlAfter = cleanAfter;
+      var dollar = "";
+
+      if (nlAfter === "" && isSub !== SUBPARSE) {
+        dollar = "$";
+      }
+
+      var newRe = nlBefore + nlFirst + nlAfter + dollar + nlLast;
+      re = newRe;
+    } // if the re is not "" at this point, then we need to make sure
+    // it doesn't match against an empty path part.
+    // Otherwise a/* will match a/, which it should not.
+
+
+    if (re !== "" && hasMagic) {
+      re = "(?=.)" + re;
+    }
+
+    if (addPatternStart) {
+      re = patternStart + re;
+    } // parsing just a piece of a larger pattern.
+
+
+    if (isSub === SUBPARSE) {
+      return [re, hasMagic];
+    } // skip the regexp for non-magical patterns
+    // unescape anything in it, though, so that it'll be
+    // an exact match against a file etc.
+
+
+    if (!hasMagic) {
+      return globUnescape(pattern);
+    }
+
+    var flags = options.nocase ? "i" : "";
+
+    try {
+      var regExp = new RegExp("^" + re + "$", flags);
+    } catch (er) {
+      // If it was an invalid regular expression, then it can't match
+      // anything.  This trick looks for a character after the end of
+      // the string, which is of course impossible, except in multi-line
+      // mode, but it's not a /m regex.
+      return new RegExp("$.");
+    }
+
+    regExp._glob = pattern;
+    regExp._src = re;
+    return regExp;
+  }
+
+  minimatch.makeRe = function (pattern, options) {
+    return new Minimatch(pattern, options || {}).makeRe();
+  };
+
+  Minimatch.prototype.makeRe = makeRe;
+
+  function makeRe() {
+    if (this.regexp || this.regexp === false) return this.regexp; // at this point, this.set is a 2d array of partial
+    // pattern strings, or "**".
+    //
+    // It's better to use .match().  This function shouldn't
+    // be used, really, but it's pretty convenient sometimes,
+    // when you just want to work with a regex.
+
+    var set = this.set;
+
+    if (!set.length) {
+      this.regexp = false;
+      return this.regexp;
+    }
+
+    var options = this.options;
+    var twoStar = options.noglobstar ? star : options.dot ? twoStarDot : twoStarNoDot;
+    var flags = options.nocase ? "i" : "";
+    var re = set.map(function (pattern) {
+      return pattern.map(function (p) {
+        return p === GLOBSTAR ? twoStar : typeof p === "string" ? regExpEscape(p) : p._src;
+      }).join("\\\/");
+    }).join("|"); // must match entire pattern
+    // ending in a * or ** will make it less strict.
+
+    re = "^(?:" + re + ")$"; // can match anything, as long as it's not this.
+
+    if (this.negate) re = "^(?!" + re + ").*$";
+
+    try {
+      this.regexp = new RegExp(re, flags);
+    } catch (ex) {
+      this.regexp = false;
+    }
+
+    return this.regexp;
+  }
+
+  minimatch.match = function (list, pattern, options) {
+    options = options || {};
+    var mm = new Minimatch(pattern, options);
+    list = list.filter(function (f) {
+      return mm.match(f);
+    });
+
+    if (mm.options.nonull && !list.length) {
+      list.push(pattern);
+    }
+
+    return list;
+  };
+
+  Minimatch.prototype.match = match;
+
+  function match(f, partial) {
+    this.debug("match", f, this.pattern); // short-circuit in the case of busted things.
+    // comments, etc.
+
+    if (this.comment) return false;
+    if (this.empty) return f === "";
+    if (f === "/" && partial) return true;
+    var options = this.options; // windows: need to use /, not \
+
+    if (path.sep !== "/") {
+      f = f.split(path.sep).join("/");
+    } // treat the test path as a set of pathparts.
+
+
+    f = f.split(slashSplit);
+    this.debug(this.pattern, "split", f); // just ONE of the pattern sets in this.set needs to match
+    // in order for it to be valid.  If negating, then just one
+    // match means that we have failed.
+    // Either way, return on the first hit.
+
+    var set = this.set;
+    this.debug(this.pattern, "set", set); // Find the basename of the path by looking for the last non-empty segment
+
+    var filename;
+    var i;
+
+    for (i = f.length - 1; i >= 0; i--) {
+      filename = f[i];
+      if (filename) break;
+    }
+
+    for (i = 0; i < set.length; i++) {
+      var pattern = set[i];
+      var file = f;
+
+      if (options.matchBase && pattern.length === 1) {
+        file = [filename];
+      }
+
+      var hit = this.matchOne(file, pattern, partial);
+
+      if (hit) {
+        if (options.flipNegate) return true;
+        return !this.negate;
+      }
+    } // didn't get any hits.  this is success if it's a negative
+    // pattern, failure otherwise.
+
+
+    if (options.flipNegate) return false;
+    return this.negate;
+  } // set partial to true to test if, for example,
+  // "/a/b" matches the start of "/*/b/*/d"
+  // Partial means, if you run out of file before you run
+  // out of pattern, then that's fine, as long as all
+  // the parts match.
+
+
+  Minimatch.prototype.matchOne = function (file, pattern, partial) {
+    var options = this.options;
+    this.debug("matchOne", {
+      "this": this,
+      file: file,
+      pattern: pattern
+    });
+    this.debug("matchOne", file.length, pattern.length);
+
+    for (var fi = 0, pi = 0, fl = file.length, pl = pattern.length; fi < fl && pi < pl; fi++, pi++) {
+      this.debug("matchOne loop");
+      var p = pattern[pi];
+      var f = file[fi];
+      this.debug(pattern, p, f); // should be impossible.
+      // some invalid regexp stuff in the set.
+
+      if (p === false) return false;
+
+      if (p === GLOBSTAR) {
+        this.debug("GLOBSTAR", [pattern, p, f]); // "**"
+        // a/**/b/**/c would match the following:
+        // a/b/x/y/z/c
+        // a/x/y/z/b/c
+        // a/b/x/b/x/c
+        // a/b/c
+        // To do this, take the rest of the pattern after
+        // the **, and see if it would match the file remainder.
+        // If so, return success.
+        // If not, the ** "swallows" a segment, and try again.
+        // This is recursively awful.
+        //
+        // a/**/b/**/c matching a/b/x/y/z/c
+        // - a matches a
+        // - doublestar
+        //   - matchOne(b/x/y/z/c, b/**/c)
+        //     - b matches b
+        //     - doublestar
+        //       - matchOne(x/y/z/c, c) -> no
+        //       - matchOne(y/z/c, c) -> no
+        //       - matchOne(z/c, c) -> no
+        //       - matchOne(c, c) yes, hit
+
+        var fr = fi;
+        var pr = pi + 1;
+
+        if (pr === pl) {
+          this.debug("** at the end"); // a ** at the end will just swallow the rest.
+          // We have found a match.
+          // however, it will not swallow /.x, unless
+          // options.dot is set.
+          // . and .. are *never* matched by **, for explosively
+          // exponential reasons.
+
+          for (; fi < fl; fi++) {
+            if (file[fi] === "." || file[fi] === ".." || !options.dot && file[fi].charAt(0) === ".") return false;
+          }
+
+          return true;
+        } // ok, let's see if we can swallow whatever we can.
+
+
+        while (fr < fl) {
+          var swallowee = file[fr];
+          this.debug("\nglobstar while", file, fr, pattern, pr, swallowee); // XXX remove this slice.  Just pass the start index.
+
+          if (this.matchOne(file.slice(fr), pattern.slice(pr), partial)) {
+            this.debug("globstar found match!", fr, fl, swallowee); // found a match.
+
+            return true;
+          } else {
+            // can't swallow "." or ".." ever.
+            // can only swallow ".foo" when explicitly asked.
+            if (swallowee === "." || swallowee === ".." || !options.dot && swallowee.charAt(0) === ".") {
+              this.debug("dot detected!", file, fr, pattern, pr);
+              break;
+            } // ** swallows a segment, and continue.
+
+
+            this.debug("globstar swallow a segment, and continue");
+            fr++;
+          }
+        } // no match was found.
+        // However, in partial mode, we can't say this is necessarily over.
+        // If there's more *pattern* left, then
+
+
+        if (partial) {
+          // ran out of file
+          this.debug("\n>>> no match, partial?", file, fr, pattern, pr);
+          if (fr === fl) return true;
+        }
+
+        return false;
+      } // something other than **
+      // non-magic patterns just have to match exactly
+      // patterns with magic have been turned into regexps.
+
+
+      var hit;
+
+      if (typeof p === "string") {
+        if (options.nocase) {
+          hit = f.toLowerCase() === p.toLowerCase();
         } else {
-          // 异步记录
-          setTimeout(logFunc, 0);
+          hit = f === p;
         }
-      }
-      /**
-       * 获取最后一次刺激的类型与路径
-       * @returns {{type: string | null; path: string[] | null} | undefined}
-       */
 
-    }, {
-      key: "getLatestStimuliSign",
-      value: function getLatestStimuliSign() {
-        if (this.stimuliLog.latestType) {
-          return {
-            type: this.stimuliLog.latestType,
-            path: this.stimuliLog.latestPath
-          };
-        }
+        this.debug("string match", p, f, hit);
+      } else {
+        hit = f.match(p);
+        this.debug("pattern match", p, f, hit);
       }
-    }]);
 
-    return StimuliBus;
-  }();
-   //# sourceMappingURL=StimuliBus.js.map
+      if (!hit) return false;
+    } // Note: ending in / means that we'll get a final ""
+    // at the end of the pattern.  This can only match a
+    // corresponding "" at the end of the file.
+    // If the file ends in /, then it can only match a
+    // a pattern that ends in /, unless the pattern just
+    // doesn't have any more for it. But, a/b/ should *not*
+    // match "a/b/*", even though "" matches against the
+    // [^/]*? pattern, except in partial mode, where it might
+    // simply not be reached yet.
+    // However, a/b/ should still satisfy a/*
+    // now either we fell off the end of the pattern, or we're done.
+
+
+    if (fi === fl && pi === pl) {
+      // ran out of pattern and filename at the same time.
+      // an exact hit!
+      return true;
+    } else if (fi === fl) {
+      // ran out of file, but still had pattern left.
+      // this is ok if we're doing the match as part of
+      // a glob fs traversal.
+      return partial;
+    } else if (pi === pl) {
+      // ran out of pattern, still have file left.
+      // this is only acceptable if we're on the very last
+      // empty segment of a file with a trailing slash.
+      // a/* should match a/b/
+      var emptyFileEnd = fi === fl - 1 && file[fi] === "";
+      return emptyFileEnd;
+    } // should be unreachable.
+
+
+    throw new Error("wtf?");
+  }; // replace stuff like \* with *
+
+
+  function globUnescape(s) {
+    return s.replace(/\\(.)/g, "$1");
+  }
+
+  function regExpEscape(s) {
+    return s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+  }
 
   /**
    * Removes all key-value entries from the list cache.
@@ -2742,9 +3374,9 @@
    * _.isArray(_.noop);
    * // => false
    */
-  var isArray = Array.isArray;
+  var isArray$1 = Array.isArray;
 
-  var isArray_1 = isArray;
+  var isArray_1 = isArray$1;
 
   /**
    * This method returns `false`.
@@ -4090,9 +4722,769 @@
 
   var cloneDeep_1 = cloneDeep;
 
-  var GOB_CORE_NAME = "[Gob Core]";
+  if (window) {
+    window.minimatch = minimatch_1;
+  }
+  /**
+   * 判断是否是异步函数
+   * @param {Function} func
+   * @returns {boolean}
+   */
+
+
+  function isAsyncFunction(func) {
+    var str = func.toString().trim();
+    return !!(str.match(/^async /) || str.match(/return _ref[^\.]*\.apply/));
+  }
+  /**
+   * 规则化 path，让数组与字符串两种路径都可以用 ["a","b"], "a.b", "a\b\c", "a/b/c"
+   * @param {string[] | string} path
+   * @returns {string[]}
+   */
+
+
+  function normalizePath(path) {
+    if (typeof path === "string") {
+      return path.split(/[\.\\/]/);
+    } else {
+      return path;
+    }
+  }
+
+  var Util = {
+    rcType: TypeTYP,
+    rcObject: ObjectOBJ,
+    name: "util",
+    isAsyncFunction: isAsyncFunction,
+    minimatch: minimatch_1,
+    normalizePath: normalizePath,
+    cloneDeep: cloneDeep_1
+  };
+   //# sourceMappingURL=Util.js.map
+
+  var FilterType;
+
+  (function (FilterType) {
+    FilterType["pre"] = "pre";
+    FilterType["fin"] = "fin";
+  })(FilterType || (FilterType = {}));
+
+  var FilterManager =
+  /*#__PURE__*/
+  function () {
+    function FilterManager(options) {
+      _classCallCheck(this, FilterManager);
+
+      this.filters = {
+        pre: {},
+        fin: {},
+        get: {}
+      };
+      this.globFilters = [];
+      this.options = Object.assign({}, FilterManager.DEFAULT_OPTIONS, options);
+    }
+    /**
+     * 添加一个过滤器
+     * @param {Filter} filter
+     */
+
+
+    _createClass(FilterManager, [{
+      key: "addFilter",
+      value: function addFilter(filter) {
+        if (Array.isArray(filter.path)) {
+          var NODE_KEY = "[GOB:FILTERS NODE]";
+          var filtersSub = this.filters[filter.type];
+          var node = Util.rcObject.getObjectValueByNames(filtersSub, _toConsumableArray(filter.path).concat([NODE_KEY]), undefined);
+
+          if (node === undefined) {
+            Util.rcObject.setObjectValueByNames(filtersSub, _toConsumableArray(filter.path).concat([NODE_KEY]), [filter]);
+          } else {
+            if (node.push) {
+              node.push(filter);
+            } else {
+              throw Error("[Gob] FilterManager.addFilter() filters Node not found. path:" + JSON.stringify(filter.path));
+            }
+          }
+
+          return filter;
+        } else {
+          this.globFilters.push(filter);
+          return filter;
+        }
+      }
+      /**
+       * 根据 path 和过滤器 Type 获取一个过滤器列表
+       * @param path
+       * @param type
+       * @return {any}
+       */
+
+    }, {
+      key: "getFilters",
+      value: function getFilters(path, type) {
+        var _this = this;
+
+        var NODE_KEY = "[GOB:FILTERS NODE]";
+        var filtersSub = this.filters[type];
+        var node = Util.rcObject.getObjectValueByNames(filtersSub, _toConsumableArray(path).concat([NODE_KEY]), undefined);
+        var globResult = this.globFilters.filter(function (filter) {
+          if (filter.path instanceof RegExp) {
+            return filter.path.test(path.join(_this.options.pathSeparator));
+          } else {
+            return Util.minimatch(path.join(_this.options.pathSeparator), filter.path);
+          }
+        });
+        if (node == undefined) node = [];
+        if (globResult == undefined) globResult = [];
+        return _toConsumableArray(node).concat(_toConsumableArray(globResult));
+      }
+      /**
+       * 移除一个过滤器
+       * @param {Filter} filter
+       * @returns {any}
+       */
+
+    }, {
+      key: "removeFilter",
+      value: function removeFilter(filter) {
+        var node = null;
+
+        if (Array.isArray(filter.path)) {
+          var NODE_KEY = "[GOB:FILTERS NODE]";
+          var filtersSub = this.filters[filter.type];
+          node = Util.rcObject.getObjectValueByNames(filtersSub, _toConsumableArray(filter.path).concat([NODE_KEY]), undefined);
+        } else {
+          node = this.globFilters;
+        }
+
+        if (node) {
+          for (var i = 0; i < node.length; i++) {
+            if (node[i] === filter) {
+              node.splice(i, 1);
+              return true;
+            }
+          }
+        }
+      }
+      /**
+       * 新建一个过滤器
+       * @param {string[]} path
+       * @param {FilterType} type
+       * @param {Function} func
+       * @param {string} name
+       * @param {number} level
+       */
+
+    }, {
+      key: "newFilter",
+      value: function newFilter(path, type, func) {
+        var name = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "";
+        var level = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 5;
+        var isAsync = arguments.length > 5 ? arguments[5] : undefined;
+
+        if (typeof func !== "function") {
+          throw Error("[Gob] FilterManager.newFilter(), func is not a functin. func is " + _typeof(func));
+        }
+
+        if (!Array.isArray(path) && !(path instanceof RegExp) && !(typeof path === "string")) {
+          throw Error("[Gob] FilterManager.newFilter(), path is not a Array|String|RegExp. path is " + _typeof(path));
+        }
+
+        if (!this.filters[type]) {
+          throw Error("[Gob] FilterManager.newFilter(), type is not a FilterType: \"fin\", \"pre\", \"get\". type is " + type);
+        }
+
+        var filter = {
+          path: path,
+          type: type,
+          name: name,
+          func: func,
+          isAsync: isAsync,
+          level: level,
+          disable: false
+        }; // 如果没有显式指定过滤器是否是异步,则自动判断
+
+        if (isAsync == undefined) {
+          filter.isAsync = Util.isAsyncFunction(func);
+        }
+
+        return filter;
+      }
+    }]);
+
+    return FilterManager;
+  }();
+
+  FilterManager.DEFAULT_OPTIONS = {
+    pathSeparator: "."
+  };
+   //# sourceMappingURL=FilterManager.js.map
+
+  // Created by nullice on 2018/05/02 - 14:34 
+  var latest = null;
+  /**
+   * 刺激检查，忽略一些刺激不记录到 stimuliLog ，比如忽略数组添加成员时对 length 的 set
+   * @param {string[]} path
+   * @param {HandlerContext} handlerContext
+   * @returns {Boolean}
+   */
+
+  function igonreSideEffect(stimuliType, path, handlerContext) {
+    var loaclDataIsArray = Array.isArray(handlerContext.loaclData);
+
+    if (loaclDataIsArray) {
+      if (path[path.length - 1] === "length") {
+        if (latest) {
+          if (latest.stimuliType === "set" && latest.loaclDataIsArray == true) {
+            // 上一次刺激不是设置 length
+            if (latest.path && latest.path[latest.path.length - 1] !== "length") {
+              _logLatest(stimuliType, path, loaclDataIsArray);
+
+              return true;
+            }
+          }
+        }
+      }
+    }
+
+    _logLatest(stimuliType, path, loaclDataIsArray);
+
+    return false;
+  }
+  /**
+   * 记录本次刺激特征，为下一次刺激检查备用
+   * @param {string} stimuliType
+   * @param {string[]} path
+   * @param {boolean} loaclDataIsArray
+   * @private
+   */
+
+
+  function _logLatest(stimuliType, path, loaclDataIsArray) {
+    latest = {
+      stimuliType: stimuliType,
+      path: path,
+      loaclDataIsArray: loaclDataIsArray
+    };
+  }
+   //# sourceMappingURL=ignore-side-effect.js.map
+
+  var rcObject = Util.rcObject;
+  /**
+   * 刺激总线
+   */
+
+  var StimuliBus =
+  /*#__PURE__*/
+  function () {
+    function StimuliBus(gobCore) {
+      _classCallCheck(this, StimuliBus);
+
+      this.stimuliLog = {
+        changes: [],
+        visits: [],
+        indexes: {
+          set: 0,
+          get: 0,
+          delete: 0,
+          all: 0
+        },
+        latestPath: null,
+        latestType: null
+      };
+      this.gobCore = gobCore;
+    }
+    /**
+     * 总线的刺激受体，根据接收的刺激
+     * @param {HandlerContext} [handlerContext] 上下文
+     * @return {any | any | any | void | boolean}
+     * @param stimuli
+     */
+
+
+    _createClass(StimuliBus, [{
+      key: "receptor",
+      value: function receptor(stimuli, handlerContext) {
+        // 过滤器处理
+        var activeFilters = this.gobCore.filterManager.getFilters(stimuli.path, FilterType.pre);
+
+        for (var i = 0; i < activeFilters.length; i++) {
+          if (activeFilters[i].isAsync) {
+            break;
+          }
+        }
+
+        return this.react(stimuli, handlerContext);
+      }
+      /**
+       * 刺激最终反应，根据刺激改变 data
+       * @param {string} stimuliType
+       * @param {string[]} path
+       * @param value
+       * @param {object | string | null} origin
+       * @param {HandlerContext} handlerContext
+       * @returns {any}
+       */
+
+    }, {
+      key: "react",
+      value: function react(stimuli, handlerContext) {
+        console.log("[receptor]", handlerContext ? "<Handler>" : "<noHandler>", stimuli.type, stimuli.path); // 记录上下文
+
+        if (handlerContext) {
+          // 是否忽略一些副作用产生的刺激
+          if (!igonreSideEffect(stimuli.type, Util.normalizePath(stimuli.path), handlerContext)) {
+            // console.log("Ignore IgnoreSideEffect", handlerContext)
+            this.recordStimuli(stimuli);
+          }
+        }
+
+        var type = stimuli.type;
+        var path = Util.normalizePath(stimuli.path);
+        var value = stimuli.value;
+        var set = this.gobCore.handler.set;
+        var get = this.gobCore.handler.get;
+        var del = this.gobCore.handler.delete;
+
+        switch (stimuli.type) {
+          case "get":
+            {
+              if (!handlerContext) {
+                return rcObject.getObjectValueByNames(this.gobCore.proxy, path, null);
+              } else {
+                return get(path, path[path.length - 1], handlerContext);
+              }
+            }
+
+          case "set":
+            {
+              if (!handlerContext) {
+                return rcObject.setObjectValueByNames(this.gobCore.proxy, path, value);
+              } else {
+                return set(path, value, path[path.length - 1], handlerContext);
+              }
+            }
+
+          case "delete":
+            {
+              if (!handlerContext) {
+                return rcObject.deleteObjectValueByNames(this.gobCore.proxy, path);
+              } else {
+                return del(path, value, path[path.length - 1], handlerContext);
+              }
+            }
+
+          default:
+
+        }
+      }
+      /**
+       * 记录刺激
+       * @param {string} stimuliType
+       * @param {string[]} path
+       * @param value
+       * @param {object | string | null} origin
+       */
+
+    }, {
+      key: "recordStimuli",
+      value: function recordStimuli(stimuli) {
+        var _this = this;
+
+        // 如果禁用记录，则立即返回
+        if (this.gobCore.options.disableLog === true) {
+          return;
+        }
+
+        if (this.gobCore.options.logType) {
+          if (this.gobCore.options.logType[stimuli.type] === false) {
+            return;
+          }
+        } // 基本记录
+
+
+        this.stimuliLog.latestPath = Util.normalizePath(stimuli.path);
+        this.stimuliLog.latestType = stimuli.type;
+        var index = this.stimuliLog.indexes.all++;
+        var typeIndex = this.stimuliLog.indexes[stimuli.type]++; // 详细记录
+
+        var logFunc = function logFunc() {
+          var logStimuli = {
+            type: stimuli.type,
+            path: Util.normalizePath(stimuli.path),
+            value: Util.cloneDeep(stimuli.value),
+            origin: Util.cloneDeep(stimuli.origin),
+            info: {
+              index: index,
+              typeIndex: typeIndex
+            }
+          };
+          console.log("[Stimuli]", logStimuli);
+
+          if (stimuli.type === "set" || stimuli.type === "delete") {
+            _this.stimuliLog.changes.push(logStimuli);
+          } else {
+            _this.stimuliLog.visits.push(logStimuli);
+          }
+        };
+
+        if (this.gobCore.options.syncLog === true) {
+          // 同步记录
+          logFunc();
+        } else {
+          // 异步记录
+          setTimeout(logFunc, 0);
+        }
+      }
+      /**
+       * 获取最后一次刺激的类型与路径
+       * @returns {{type: string | null; path: string[] | null} | undefined}
+       */
+
+    }, {
+      key: "getLatestStimuliSign",
+      value: function getLatestStimuliSign() {
+        if (this.stimuliLog.latestType) {
+          return {
+            type: this.stimuliLog.latestType,
+            path: this.stimuliLog.latestPath
+          };
+        }
+      }
+    }]);
+
+    return StimuliBus;
+  }();
+   //# sourceMappingURL=StimuliBus.js.map
+
+  var Abstract_Handler = function Abstract_Handler() {
+    _classCallCheck(this, Abstract_Handler);
+  }; //# sourceMappingURL=Abstract.Handler.js.map
+
+  var GATE_PROXY_NAME = "[PROXY]";
+  /**
+   * 创建一个基于 path 的代理处理器
+   * @param loaclData
+   * @param {string[]} loaclpath
+   * @param {string[]} fullPath
+   * @param {{gobCore: GobCore; GOB_CORE_NAME: string}} state
+   * @returns {{set: (target: any, key: any, value: any) => boolean; get: (target: any, property: any) => (any)}}
+   */
+
+  function giveProxyHandler(loaclData, localGate, fullPath, state) {
+    return {
+      "set": function set(target, key, value) {
+        // 处理特殊属性 [Gob Core]
+        if (key == state.GOB_CORE_NAME) {
+          return true;
+        }
+
+        var nowFullPath = _toConsumableArray(fullPath).concat([key]);
+
+        var handlerContext = {
+          loaclData: loaclData,
+          localGate: localGate,
+          state: state
+        };
+        return state.gobCore.stimuliBus.receptor({
+          type: "set",
+          path: nowFullPath,
+          value: value,
+          origin: null
+        }, handlerContext);
+      },
+      "get": function get(target, key) {
+        // 处理特殊属性 [Gob Core]
+        if (key == state.GOB_CORE_NAME) {
+          return state.gobCore;
+        }
+
+        if (key == "$get") return $get;
+        if (key == "$set") return $set;
+        if (key == "$delete") return $delete;
+        if (key == "$core") return state.gobCore;
+
+        var nowFullPath = _toConsumableArray(fullPath).concat([key]);
+
+        var handlerContext = {
+          loaclData: loaclData,
+          localGate: localGate,
+          state: state
+        };
+        return state.gobCore.stimuliBus.receptor({
+          type: "get",
+          path: nowFullPath,
+          value: undefined,
+          origin: null
+        }, handlerContext);
+      },
+      "deleteProperty": function deleteProperty(target, key) {
+        // 处理特殊属性 [Gob Core]
+        if (key == state.GOB_CORE_NAME) {
+          return true;
+        }
+
+        console.log("called: " + key);
+
+        var nowFullPath = _toConsumableArray(fullPath).concat([key]);
+
+        var handlerContext = {
+          loaclData: loaclData,
+          localGate: localGate,
+          state: state
+        };
+        return state.gobCore.stimuliBus.receptor({
+          type: "delete",
+          path: nowFullPath,
+          value: null,
+          origin: null
+        }, handlerContext);
+      }
+    };
+
+    function $get(inPath) {
+      var origin = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var path = Util.normalizePath(inPath);
+
+      var nowFullPath = _toConsumableArray(fullPath).concat(_toConsumableArray(path));
+
+      console.log("$get", nowFullPath);
+      return state.gobCore.stimuliBus.receptor({
+        type: "get",
+        path: nowFullPath,
+        value: undefined,
+        origin: origin
+      });
+    }
+
+    function $set(inPath, value) {
+      var origin = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+      var path = Util.normalizePath(inPath);
+
+      var nowFullPath = _toConsumableArray(fullPath).concat(_toConsumableArray(path));
+
+      console.log("$set", nowFullPath, value);
+      return state.gobCore.stimuliBus.receptor({
+        type: "set",
+        path: nowFullPath,
+        value: value,
+        origin: origin
+      });
+    }
+
+    function $delete(inPath) {
+      var origin = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var path = Util.normalizePath(inPath);
+
+      var nowFullPath = _toConsumableArray(fullPath).concat(_toConsumableArray(path));
+
+      console.log("$delete", nowFullPath);
+      return state.gobCore.stimuliBus.receptor({
+        type: "delete",
+        path: nowFullPath,
+        value: undefined,
+        origin: origin
+      });
+    }
+  }
+   //# sourceMappingURL=giveProxyHandler.js.map
+
+  var rcType = Util.rcType;
+  /**
+   *
+   * @param {string[]} fullPath
+   * @param {string} key
+   * @param {HandlerContext} handlerContext
+   * @returns {any}
+   */
+
+  function get(fullPath, key, handlerContext) {
+    // 获取原始值
+    // let value = rcObject.getObjectValueByNames(loaclData, [key], null)
+    var value = handlerContext.loaclData[key];
+    console.log("[get]", fullPath, {
+      loaclData: handlerContext.loaclData,
+      key: key
+    }); // 根据值属性处理读出值
+
+    var valueType = rcType.getType(value);
+    console.log("  [get value]", value, valueType);
+
+    if (valueType === "object" || valueType === "array") {
+      console.log("  [find gates]", fullPath);
+      var gate = handlerContext.localGate[key];
+      return gate[GATE_PROXY_NAME];
+    }
+
+    {
+      console.log("  return value", value);
+      return value;
+    }
+  }
+   //# sourceMappingURL=get.js.map
+
+  var rcType$1 = Util.rcType;
+  var rcObject$1 = Util.rcObject;
+  /**
+   * 收到 set 刺激后对 gob 实例进行的操作
+   * @param {string[]} fullPath
+   * @param value
+   * @param {string} key
+   * @param {HandlerContext} handlerContext handler
+   */
+
+  function set(fullPath, value, key, handlerContext) {
+    var valueType = rcType$1.getType(value);
+    console.log("[set]", "fullPath:", fullPath, {
+      valueType: valueType,
+      key: key,
+      value: value
+    });
+
+    if (valueType === "object" || valueType === "array") {
+      // 写入值到 data
+      handlerContext.loaclData[key] = value; // 创建 gate
+
+      creatGate(value, [key], fullPath, handlerContext); // 遍历值来创建 gate
+
+      rcObject$1.pathEach(value, function (item, path) {
+        if (_typeof(item) === "object") {
+          creatGate(item, [key].concat(_toConsumableArray(path)), _toConsumableArray(fullPath).concat(_toConsumableArray(path)), handlerContext);
+        }
+      }, creatCycleGate);
+    } else {
+      handlerContext.loaclData[key] = value;
+    }
+
+    return true;
+    /**
+     * 为循环引用创建 Gate
+     * @param {Object} object 循环引用对象
+     * @param {string[]} path 发生循环引用的对象的 path
+     * @param {string[]} cyclePath 循环引用目标的 path
+     */
+
+    function creatCycleGate(object, path, cyclePath) {
+      // console.log("  [cycle]", object, path, cyclePath)
+      var cycleObject;
+
+      if (cyclePath.length == 0) {
+        cycleObject = handlerContext.localGate[key];
+      } else {
+        cycleObject = rcObject$1.getObjectValueByNames(handlerContext.localGate, [key, cyclePath], null);
+      } // console.log("  [cycle cycleObject]", cycleObject)
+
+
+      rcObject$1.setObjectValueByNames(handlerContext.localGate, [key].concat(_toConsumableArray(path)), cycleObject);
+    }
+  }
+  /**
+   * 在这个 Handler 的 localData 上根据 localPath 设置 Gate
+   * @param {object} inData
+   * @param {string[]} targetPath
+   * @param {string[]} fullPath
+   * @param handlerContext
+   * @returns {Gate}
+   */
+
+
+  function creatGate(inData, targetPath, fullPath, handlerContext) {
+    var gate = {};
+    var proxy = new Proxy(inData, giveProxyHandler(inData, gate, fullPath, handlerContext.state));
+    gate[GATE_PROXY_NAME] = proxy;
+    rcObject$1.setObjectValueByNames(handlerContext.localGate, targetPath, gate);
+    return gate;
+  }
+   //# sourceMappingURL=set.js.map
+
+  var rcType$2 = Util.rcType;
+  /**
+   * 收到 delete 刺激后对 gob 实例进行的操作
+   * @param {string[]} fullPath
+   * @param value
+   * @param {string} key
+   * @param {HandlerContext} handlerContext handler
+   */
+
+  function del(fullPath, value, key, handlerContext) {
+    var valueType = rcType$2.getType(value);
+    console.log("[del]", "fullPath:", fullPath, {
+      key: key
+    });
+    return delete handlerContext.loaclData[key];
+  }
+   //# sourceMappingURL=delete.js.map
+
+  var GOB_CORE_NAME = "[Gob Core]"; //# sourceMappingURL=Core.consts.js.map
+
+  var ProxyHandler =
+  /*#__PURE__*/
+  function (_Abstract_Handler) {
+    _inherits(ProxyHandler, _Abstract_Handler);
+
+    function ProxyHandler() {
+      var _this;
+
+      _classCallCheck(this, ProxyHandler);
+
+      _this = _possibleConstructorReturn(this, (ProxyHandler.__proto__ || Object.getPrototypeOf(ProxyHandler)).apply(this, arguments));
+      _this.get = get;
+      _this.set = set;
+      _this.delete = del;
+      return _this;
+    }
+
+    _createClass(ProxyHandler, [{
+      key: "createGobProxy",
+      value: function createGobProxy(gobCore, initData) {
+        // 创建代理
+        var proxy = new Proxy(gobCore.data, giveProxyHandler(gobCore.data, gobCore.gate, [], {
+          coreData: gobCore.data,
+          coreGate: gobCore.gate,
+          gobCore: gobCore,
+          GOB_CORE_NAME: GOB_CORE_NAME
+        })); // 设置初始值
+
+        if (initData) {
+          for (var key in initData) {
+            proxy[key] = initData[key];
+          }
+        }
+
+        return proxy;
+      }
+    }]);
+
+    return ProxyHandler;
+  }(Abstract_Handler);
+   //# sourceMappingURL=ProxyHandler.js.map
+
+  var Recorder =
+  /*#__PURE__*/
+  function () {
+    function Recorder(gobCore) {
+      _classCallCheck(this, Recorder);
+
+      this.gobCore = gobCore;
+    }
+    /**
+     * 记录一次
+     */
+
+
+    _createClass(Recorder, [{
+      key: "recOnce",
+      value: function recOnce() {}
+    }]);
+
+    return Recorder;
+  }();
+   //# sourceMappingURL=Recorder.js.map
+
   /*
   *    GobFactory(state) =>  gob instance = GobProxy: {GobCore + state }
+  *
   * */
 
   var GobCore = function GobCore() {
@@ -4100,12 +5492,19 @@
 
     _classCallCheck(this, GobCore);
 
-    this.GobFactory = GobFactory;
     this.stimuliBus = new StimuliBus(this);
+    this.filterManager = new FilterManager({
+      pathSeparator: "."
+    });
+    this.recorder = new Recorder(this);
     this.isGob = 3;
     this.data = {};
     this.gate = {};
     this.options = Object.assign({}, GobCore.DEFAULT_OPTIONS, options);
+
+    {
+      this.handler = new ProxyHandler();
+    }
   }; // 默认参数
 
   GobCore.DEFAULT_OPTIONS = {
@@ -4123,27 +5522,14 @@
     // 创建一个 GobCore
     var gobCore = new GobCore(options); // 创建一个代理
 
-    var proxy = new Proxy(gobCore.data, giveProxyHandler(gobCore.data, gobCore.gate, [], {
-      coreData: gobCore.data,
-      coreGate: gobCore.gate,
-      gobCore: gobCore,
-      GOB_CORE_NAME: GOB_CORE_NAME
-    })); // 设置初始值
-
-    if (object) {
-      for (var key in object) {
-        proxy[key] = object[key];
-      }
-    }
-
+    var proxy = gobCore.handler.createGobProxy(gobCore, object);
     gobCore.proxy = proxy;
     return proxy;
   }; // GobFactory 提供的默认设置
 
 
   GobFactory.default = {
-    options: {},
-    cloneDeep: cloneDeep_1
+    options: {}
   }; // 注册一些方法和常量到 Gob
 
   GobFactory.GOB_CORE_NAME = GOB_CORE_NAME;
@@ -4159,7 +5545,7 @@
     if (core) {
       return gob[GOB_CORE_NAME];
     } else {
-      throw Error("Gob.inspect: param is not Gob3 Instance. :" + gob);
+      throw Error("[Gob] Gob.inspect: param is not Gob3 Instance. :" + gob);
     }
   };
 

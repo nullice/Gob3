@@ -2,7 +2,7 @@ import util from "@/Util/Util"
 const rcType = util.rcType
 const rcObject = util.rcObject
 
-import giveProxyHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/core/giveProxyHandler"
+import giveProxyHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/Core/Handlers/ProxyHandler/sub/giveProxyHandler"
 
 
 /**

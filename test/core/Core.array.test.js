@@ -28,7 +28,7 @@ describe("Array base", () =>
         expect( gob.arr2[2].ob.obb).toBe(123)
         gob.arr2[2].ob.obb=444
         var core = Gob.inspect(gob)
-        var sign = core.stimuliBus.getLatestStimuliSign()
+        var sign = core.recorder.getLatestStimuliInfo()
         expect(sign.type).toBe("set")
     })
 })

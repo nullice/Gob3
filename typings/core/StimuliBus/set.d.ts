@@ -1,4 +1,4 @@
-import { HandlerContext } from "@/core/giveProxyHandler";
+import { HandlerContext } from "@/Core/Handlers/ProxyHandler/sub/giveProxyHandler";
 /**
  * 收到 set 刺激后对 gob 实例进行的操作
  * @param {string[]} fullPath

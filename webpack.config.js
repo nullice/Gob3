@@ -20,7 +20,10 @@ if (fs.existsSync(ENTRY_WEB))
         mode: "development",
         target: "web",
         resolve: {
-            extensions: ['.ts', '.js', '.json']
+            extensions: [".ts", ".js", ".json"],
+            alias: {
+                "@": path.resolve(__dirname, "./src")
+            }
         },
         output: {
             filename: PACKAGE_NAME + ".bundle-web.js",
@@ -33,7 +36,7 @@ if (fs.existsSync(ENTRY_WEB))
             rules: [
                 {
                     test: /\.js$/,
-                    use:babel_loader,
+                    use: babel_loader,
                 },
                 {
                     test: /\.tsx?$/,
@@ -77,7 +80,10 @@ if (fs.existsSync(ENTRY_NODE))
         mode: "development",
         target: "node",
         resolve: {
-            extensions: ['.ts', '.js', '.json']
+            extensions: [".ts", ".js", ".json"],
+            alias: {
+                "@": path.resolve(__dirname, "./src")
+            }
         },
         output: {
             library: PACKAGE_NAME,

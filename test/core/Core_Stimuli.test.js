@@ -73,10 +73,11 @@ describe("StimuliBus Log",  () =>
     let core = Gob.inspect(gob)
 
 
-    test("getLatestStimuliSign raw get", () =>
+    test("recorder.getLatestStimuliInfo() raw get", () =>
         {
             gob.a
-            var sign = core.stimuliBus.getLatestStimuliSign()
+            var sign = core.recorder.getLatestStimuliInfo()
+
             expect(sign.type).toBe("get")
             expect(sign.path).toEqual(["a"])
 
@@ -85,36 +86,35 @@ describe("StimuliBus Log",  () =>
 
     test("stimuliLog.indexes", () =>
         {
-            expect(core.stimuliBus.stimuliLog.indexes.all).toBe(1)
-            expect(core.stimuliBus.stimuliLog.indexes.get).toBe(1)
-            expect(core.stimuliBus.stimuliLog.indexes.set).toBe(0)
-            expect(core.stimuliBus.stimuliLog.indexes.delete).toBe(0)
+            expect(core.recorder.logs.indexes.all).toBe(1)
+            expect(core.recorder.logs.indexes.get).toBe(1)
+            expect(core.recorder.logs.indexes.set).toBe(0)
+            expect(core.recorder.logs.indexes.delete).toBe(0)
         }
     )
 
-    test("getLatestStimuliSign $get", () =>
+    test("recorder.getLatestStimuliInfo() $get", () =>
         {
             gob.$get(["a"])
-            var sign = core.stimuliBus.getLatestStimuliSign()
+            var sign = core.recorder.getLatestStimuliInfo()
             expect(sign.type).toBe("get")
             expect(sign.path).toEqual(["a"])
-
         }
     )
 
     test("stimuliLog.indexes", () =>
         {
-            expect(core.stimuliBus.stimuliLog.indexes.all).toBe(2)
-            expect(core.stimuliBus.stimuliLog.indexes.get).toBe(2)
-            expect(core.stimuliBus.stimuliLog.indexes.set).toBe(0)
-            expect(core.stimuliBus.stimuliLog.indexes.delete).toBe(0)
+            expect(core.recorder.logs.indexes.all).toBe(2)
+            expect(core.recorder.logs.indexes.get).toBe(2)
+            expect(core.recorder.logs.indexes.set).toBe(0)
+            expect(core.recorder.logs.indexes.delete).toBe(0)
         }
     )
 
-    test("getLatestStimuliSign $set", () =>
+    test("recorder.getLatestStimuliInfo() $set", () =>
         {
             gob.$set(["o"], {a: {b: 123}})
-            var sign = core.stimuliBus.getLatestStimuliSign()
+            var sign = core.recorder.getLatestStimuliInfo()
             expect(sign.type).toBe("set")
             expect(sign.path).toEqual(["o"])
 
@@ -123,19 +123,19 @@ describe("StimuliBus Log",  () =>
 
     test("stimuliLog.indexes", () =>
         {
-            expect(core.stimuliBus.stimuliLog.indexes.all).toBe(3)
-            expect(core.stimuliBus.stimuliLog.indexes.get).toBe(2)
-            expect(core.stimuliBus.stimuliLog.indexes.set).toBe(1)
-            expect(core.stimuliBus.stimuliLog.indexes.delete).toBe(0)
+            expect(core.recorder.logs.indexes.all).toBe(3)
+            expect(core.recorder.logs.indexes.get).toBe(2)
+            expect(core.recorder.logs.indexes.set).toBe(1)
+            expect(core.recorder.logs.indexes.delete).toBe(0)
         }
     )
 
 
-    test("getLatestStimuliSign raw delete", () =>
+    test("recorder.getLatestStimuliInfo() raw delete", () =>
         {
             gob.o.a.b = 123
             delete gob.o.a.b
-            var sign = core.stimuliBus.getLatestStimuliSign()
+            var sign = core.recorder.getLatestStimuliInfo()
             expect(sign.type).toBe("delete")
             expect(gob.o.a.b).toBe(undefined)
             expect(sign.path).toEqual(["o", "a", "b"])
@@ -144,15 +144,15 @@ describe("StimuliBus Log",  () =>
 
     test("stimuliLog.indexes", () =>
         {
-            expect(core.stimuliBus.stimuliLog.indexes.set).toBe(2)
-            expect(core.stimuliBus.stimuliLog.indexes.delete).toBe(1)
+            expect(core.recorder.logs.indexes.set).toBe(2)
+            expect(core.recorder.logs.indexes.delete).toBe(1)
         }
     )
-    test("getLatestStimuliSign $set", () =>
+    test("recorder.getLatestStimuliInfo() $set", () =>
         {
             gob.o.a.b = 444
             gob.$delete("o.a.b")
-            var sign = core.stimuliBus.getLatestStimuliSign()
+            var sign = core.recorder.getLatestStimuliInfo()
             expect(sign.type).toBe("delete")
             expect(gob.o.a.b).toBe(undefined)
             expect(sign.path).toEqual(["o", "a", "b"])
@@ -160,8 +160,8 @@ describe("StimuliBus Log",  () =>
     )
     test("stimuliLog.indexes", () =>
         {
-            expect(core.stimuliBus.stimuliLog.indexes.set).toBe(3)
-            expect(core.stimuliBus.stimuliLog.indexes.delete).toBe(2)
+            expect(core.recorder.logs.indexes.set).toBe(3)
+            expect(core.recorder.logs.indexes.delete).toBe(2)
         }
     )
 })

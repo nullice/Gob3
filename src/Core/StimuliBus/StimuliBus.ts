@@ -4,17 +4,12 @@ import util from "@/Util/Util"
 
 let rcObject = util.rcObject
 
-import {GobState} from "@/Core/giveProxyHandler"
+import {GobState} from "@/Core/Handlers/ProxyHandler/sub/giveProxyHandler"
 import {FilterType} from "@/Core/FilterManager/FilterManager"
-import set from "./set"
-import get from "./get"
-import del from "./delete"
 import IgnoreSideEffect from "./ignore-side-effect"
 import stimuliFiltering from "./stimuli-filtering"
-
-
 import {GobCore} from "@/Core/Core"
-import {Filter} from "../../../typings/core/FilterManager/FilterManager"
+import {Filter} from "@/Core/FilterManager/FilterManager"
 
 
 export interface HandlerContext
@@ -31,7 +26,7 @@ export interface Stimuli
     value: any,
     origin: object | string | null,
     info?: {
-        time?: Date,
+        time?: number,
         index?: number,
         typeIndex?: number,
     }
@@ -64,36 +59,24 @@ class StimuliBus
         latestType: null, // 最后一次 Stimuli 类型
     }
 
-    public gobCore: GobCore
+     gobCore: GobCore
 
     constructor(gobCore: GobCore)
     {
         this.gobCore = gobCore
-
     }
-
 
     /**
      * 总线的刺激受体，根据接收的刺激
-     * @param {string} stimuliType 刺激类型 （'get','set'.'delete'）
-     * @param {string[]} path 路径
-     * @param {any} value 值
-     * @param {object | string} origin 来源
-     * @param {HandlerContext} handlerContext 上下文
-     * @return {any}
+     * @param {HandlerContext} [handlerContext] 上下文
+     * @return {any | any | any | void | boolean}
+     * @param stimuli
      */
-    public receptor(this: any, stimuliType: string, path: string[], value: any, origin: object | string | null, handlerContext?: HandlerContext)
+    public receptor(this: any, stimuli: Stimuli, handlerContext?: HandlerContext)
     {
-        let stimuli = {
-            type: stimuliType,
-            path: path,
-            value: value,
-            origin: origin
-        }
-
 
         // 过滤器处理
-        let activeFilters = this.gobCore.filterManager.getFilters(path, FilterType.pre)
+        let activeFilters = this.gobCore.filterManager.getFilters(stimuli.path, FilterType.pre)
         let isAsyncFlow = false // 是否是一个异步的过滤器流程
 
         for (var i = 0; i < activeFilters.length; i++)
@@ -105,16 +88,7 @@ class StimuliBus
             }
         }
 
-
-
-
-        stimuliType = stimuli.type
-        path = stimuli.path
-        value = stimuli.value
-        origin = stimuli.origin
-
-
-        return this.react(stimuliType, path, value, origin, handlerContext)
+        return this.react(stimuli, handlerContext)
     }
 
 
@@ -127,22 +101,32 @@ class StimuliBus
      * @param {HandlerContext} handlerContext
      * @returns {any}
      */
-    react(this: any, stimuliType: string, path: string[], value: any, origin: object | string | null, handlerContext?: HandlerContext)
+    private react(this: any, stimuli: Stimuli, handlerContext?: HandlerContext)
     {
+        console.log("[receptor]", handlerContext ? "<Handler>" : "<noHandler>", stimuli.type, stimuli.path)
 
-        console.log("[receptor]", handlerContext ? "<Handler>" : "<noHandler>", stimuliType, path)
-        // 记录上下文
+        // 记录刺激
         if (handlerContext)
         {
             // 是否忽略一些副作用产生的刺激
-            if (!IgnoreSideEffect(stimuliType, path, handlerContext))
+            if (!IgnoreSideEffect(stimuli.type, util.normalizePath(stimuli.path), handlerContext))
             {
                 // console.log("Ignore IgnoreSideEffect", handlerContext)
-                this.recordStimuli(stimuliType, path, value, origin)
+                // 记录刺激
+                this.gobCore.recorder.recOnce(stimuli)
             }
         }
 
-        switch (stimuliType)
+        // 写入刺激
+        let type = stimuli.type
+        let path = util.normalizePath(stimuli.path)
+        let value = stimuli.value
+
+        const set = this.gobCore.handler.set
+        const get = this.gobCore.handler.get
+        const del = this.gobCore.handler.delete
+
+        switch (stimuli.type)
         {
             case "get":
             {
@@ -177,97 +161,14 @@ class StimuliBus
                     return del(path, value, path[path.length - 1], handlerContext)
                 }
             }
-
             default:
             {
             }
         }
     }
 
-    /**
-     * 记录刺激
-     * @param {string} stimuliType
-     * @param {string[]} path
-     * @param value
-     * @param {object | string | null} origin
-     */
-    recordStimuli(stimuliType: string, path: string[], value: any, origin: object | string | null)
-    {
-
-        // 如果禁用记录，则立即返回
-        if (this.gobCore.options.disableLog === true)
-        {
-            return
-        }
-
-        if (this.gobCore.options.logType)
-        {
-            if (this.gobCore.options.logType[stimuliType] === false)
-            {
-                return
-            }
-        }
 
 
-        // 基本记录
-        this.stimuliLog.latestPath = path
-        this.stimuliLog.latestType = stimuliType
-        let index = this.stimuliLog.indexes.all++
-        let typeIndex = this.stimuliLog.indexes[stimuliType]++
-
-        // 详细记录
-        let logFunc = () =>
-        {
-            let stimuli: Stimuli = {
-                type: stimuliType,
-                path,
-                value: this.gobCore.GobFactory.default.cloneDeep(value),
-                origin: origin,
-                info: {
-                    index: index,
-                    typeIndex: typeIndex,
-                }
-            }
-            console.log("[Stimuli]", stimuli)
-            if (stimuliType === "set" || stimuliType === "delete")
-            {
-                this.stimuliLog.changes.push(stimuli)
-            }
-            else
-            {
-                this.stimuliLog.visits.push(stimuli)
-            }
-        }
-
-
-        if (this.gobCore.options.syncLog === true)
-        {
-            // 同步记录
-            logFunc()
-        }
-        else
-        {
-            // 异步记录
-            setTimeout(logFunc, 0)
-        }
-
-    }
-
-
-    /**
-     * 获取最后一次刺激的类型与路径
-     * @returns {{type: string | null; path: string[] | null} | undefined}
-     */
-    getLatestStimuliSign(): { type: string | null, path: string[] | null } | undefined
-    {
-        if (this.stimuliLog.latestType)
-        {
-            return {
-                type: this.stimuliLog.latestType,
-                path: this.stimuliLog.latestPath
-            }
-        }
-    }
 }
 
 export default StimuliBus
