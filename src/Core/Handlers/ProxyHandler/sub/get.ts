@@ -1,5 +1,7 @@
-import giveProxyHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/Core/Handlers/ProxyHandler/sub/giveProxyHandler"
+import {GATE_PROXY_NAME, Gate} from "@/Core/Handlers/Abstract.Handler"
+import {HandlerContext} from "./../../Abstract.Handler"
 import util from "@/Util/Util"
+
 const rcType = util.rcType
 
 
@@ -14,9 +16,9 @@ const rcType = util.rcType
 function get(fullPath: string[], key: string, handlerContext: HandlerContext)
 {
     // 获取原始值
-    // let value = rcObject.getObjectValueByNames(loaclData, [key], null)
-    let value = handlerContext.loaclData[key]
-    console.log("[get]", fullPath, {loaclData: handlerContext.loaclData, key})
+    // let value = rcObject.getObjectValueByNames(localData, [key], null)
+    let value = handlerContext.localData[key]
+    console.log("[get]", fullPath, {localData: handlerContext.localData, key})
 
 
     // 根据值属性处理读出值

@@ -8,7 +8,7 @@ interface StimuliPerson
 {
     stimuliType: string,
     path: string[],
-    loaclDataIsArray: boolean,
+    localDataIsArray: boolean,
 }
 
 let latest: StimuliPerson | null = null
@@ -21,19 +21,19 @@ let latest: StimuliPerson | null = null
  */
 function igonreSideEffect(stimuliType: string, path: string[], handlerContext: HandlerContext): Boolean
 {
-    let loaclDataIsArray = Array.isArray(handlerContext.loaclData)
-    if (loaclDataIsArray)
+    let localDataIsArray = Array.isArray(handlerContext.localData)
+    if (localDataIsArray)
     {
         if (path[path.length - 1] === "length")
         {
             if (latest)
             {
-                if (latest.stimuliType === "set" && latest.loaclDataIsArray == true)
+                if (latest.stimuliType === "set" && latest.localDataIsArray == true)
                 {
                     // 上一次刺激不是设置 length
                     if (latest.path && latest.path[latest.path.length - 1] !== "length")
                     {
-                        _logLatest(stimuliType, path, loaclDataIsArray)
+                        _logLatest(stimuliType, path, localDataIsArray)
                         return true
                     }
                 }
@@ -41,7 +41,7 @@ function igonreSideEffect(stimuliType: string, path: string[], handlerContext: H
         }
     }
 
-    _logLatest(stimuliType, path, loaclDataIsArray)
+    _logLatest(stimuliType, path, localDataIsArray)
     return false
 }
 
@@ -50,12 +50,12 @@ function igonreSideEffect(stimuliType: string, path: string[], handlerContext: H
  * 记录本次刺激特征，为下一次刺激检查备用
  * @param {string} stimuliType
  * @param {string[]} path
- * @param {boolean} loaclDataIsArray
+ * @param {boolean} localDataIsArray
  * @private
  */
-function _logLatest(stimuliType: string, path: string[], loaclDataIsArray: boolean)
+function _logLatest(stimuliType: string, path: string[], localDataIsArray: boolean)
 {
-    latest = {stimuliType, path, loaclDataIsArray}
+    latest = {stimuliType, path, localDataIsArray}
 }
 
 

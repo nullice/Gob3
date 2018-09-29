@@ -1,9 +1,12 @@
 import util from "@/Util/Util"
+
 const rcType = util.rcType
 const rcObject = util.rcObject
 
-import giveProxyHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "@/Core/Handlers/ProxyHandler/sub/giveProxyHandler"
 
+import {GATE_PROXY_NAME, Gate} from "@/Core/Handlers/Abstract.Handler"
+import giveProxyHandler from "@/Core/Handlers/ProxyHandler/sub/giveProxyHandler"
+import {HandlerContext} from "./../../Abstract.Handler"
 
 /**
  * 收到 set 刺激后对 gob 实例进行的操作
@@ -20,7 +23,7 @@ function set(fullPath: string[], value: any, key: string, handlerContext: Handle
     if (valueType === "object" || valueType === "array")
     {
         // 写入值到 data
-        handlerContext.loaclData[key] = value
+        handlerContext.localData[key] = value
 
         // 创建 gate
         creatGate(value, [key], fullPath, handlerContext)
@@ -36,7 +39,7 @@ function set(fullPath: string[], value: any, key: string, handlerContext: Handle
     }
     else
     {
-        handlerContext.loaclData[key] = value
+        handlerContext.localData[key] = value
     }
 
     return true

@@ -4925,15 +4925,15 @@ var latest = null;
  */
 
 function igonreSideEffect(stimuliType, path, handlerContext) {
-  var loaclDataIsArray = Array.isArray(handlerContext.loaclData);
+  var localDataIsArray = Array.isArray(handlerContext.localData);
 
-  if (loaclDataIsArray) {
+  if (localDataIsArray) {
     if (path[path.length - 1] === "length") {
       if (latest) {
-        if (latest.stimuliType === "set" && latest.loaclDataIsArray == true) {
+        if (latest.stimuliType === "set" && latest.localDataIsArray == true) {
           // 上一次刺激不是设置 length
           if (latest.path && latest.path[latest.path.length - 1] !== "length") {
-            _logLatest(stimuliType, path, loaclDataIsArray);
+            _logLatest(stimuliType, path, localDataIsArray);
 
             return true;
           }
@@ -4942,7 +4942,7 @@ function igonreSideEffect(stimuliType, path, handlerContext) {
     }
   }
 
-  _logLatest(stimuliType, path, loaclDataIsArray);
+  _logLatest(stimuliType, path, localDataIsArray);
 
   return false;
 }
@@ -4950,16 +4950,16 @@ function igonreSideEffect(stimuliType, path, handlerContext) {
  * 记录本次刺激特征，为下一次刺激检查备用
  * @param {string} stimuliType
  * @param {string[]} path
- * @param {boolean} loaclDataIsArray
+ * @param {boolean} localDataIsArray
  * @private
  */
 
 
-function _logLatest(stimuliType, path, loaclDataIsArray) {
+function _logLatest(stimuliType, path, localDataIsArray) {
   latest = {
     stimuliType: stimuliType,
     path: path,
-    loaclDataIsArray: loaclDataIsArray
+    localDataIsArray: localDataIsArray
   };
 }
  //# sourceMappingURL=ignore-side-effect.js.map
@@ -5024,15 +5024,17 @@ function () {
   }, {
     key: "react",
     value: function react(stimuli, handlerContext) {
-      console.log("[receptor]", handlerContext ? "<Handler>" : "<noHandler>", stimuli.type, stimuli.path); // 记录上下文
+      console.log("[receptor]", handlerContext ? "<Handler>" : "<noHandler>", stimuli.type, stimuli.path); // 记录刺激
 
       if (handlerContext) {
         // 是否忽略一些副作用产生的刺激
         if (!igonreSideEffect(stimuli.type, Util.normalizePath(stimuli.path), handlerContext)) {
           // console.log("Ignore IgnoreSideEffect", handlerContext)
-          this.recordStimuli(stimuli);
+          // 记录刺激
+          this.gobCore.recorder.recOnce(stimuli);
         }
-      }
+      } // 写入刺激
+
 
       var type = stimuli.type;
       var path = Util.normalizePath(stimuli.path);
@@ -5073,79 +5075,6 @@ function () {
 
       }
     }
-    /**
-     * 记录刺激
-     * @param {string} stimuliType
-     * @param {string[]} path
-     * @param value
-     * @param {object | string | null} origin
-     */
-
-  }, {
-    key: "recordStimuli",
-    value: function recordStimuli(stimuli) {
-      var _this = this;
-
-      // 如果禁用记录，则立即返回
-      if (this.gobCore.options.disableLog === true) {
-        return;
-      }
-
-      if (this.gobCore.options.logType) {
-        if (this.gobCore.options.logType[stimuli.type] === false) {
-          return;
-        }
-      } // 基本记录
-
-
-      this.stimuliLog.latestPath = Util.normalizePath(stimuli.path);
-      this.stimuliLog.latestType = stimuli.type;
-      var index = this.stimuliLog.indexes.all++;
-      var typeIndex = this.stimuliLog.indexes[stimuli.type]++; // 详细记录
-
-      var logFunc = function logFunc() {
-        var logStimuli = {
-          type: stimuli.type,
-          path: Util.normalizePath(stimuli.path),
-          value: Util.cloneDeep(stimuli.value),
-          origin: Util.cloneDeep(stimuli.origin),
-          info: {
-            index: index,
-            typeIndex: typeIndex
-          }
-        };
-        console.log("[Stimuli]", logStimuli);
-
-        if (stimuli.type === "set" || stimuli.type === "delete") {
-          _this.stimuliLog.changes.push(logStimuli);
-        } else {
-          _this.stimuliLog.visits.push(logStimuli);
-        }
-      };
-
-      if (this.gobCore.options.syncLog === true) {
-        // 同步记录
-        logFunc();
-      } else {
-        // 异步记录
-        setTimeout(logFunc, 0);
-      }
-    }
-    /**
-     * 获取最后一次刺激的类型与路径
-     * @returns {{type: string | null; path: string[] | null} | undefined}
-     */
-
-  }, {
-    key: "getLatestStimuliSign",
-    value: function getLatestStimuliSign() {
-      if (this.stimuliLog.latestType) {
-        return {
-          type: this.stimuliLog.latestType,
-          path: this.stimuliLog.latestPath
-        };
-      }
-    }
   }]);
 
   return StimuliBus;
@@ -5154,19 +5083,19 @@ function () {
 
 var Abstract_Handler = function Abstract_Handler() {
   _classCallCheck(this, Abstract_Handler);
-}; //# sourceMappingURL=Abstract.Handler.js.map
+};
+var GATE_PROXY_NAME = "[PROXY]"; //# sourceMappingURL=Abstract.Handler.js.map
 
-var GATE_PROXY_NAME = "[PROXY]";
 /**
  * 创建一个基于 path 的代理处理器
- * @param loaclData
- * @param {string[]} loaclpath
+ * @param localData
+ * @param {string[]} localpath
  * @param {string[]} fullPath
  * @param {{gobCore: GobCore; GOB_CORE_NAME: string}} state
  * @returns {{set: (target: any, key: any, value: any) => boolean; get: (target: any, property: any) => (any)}}
  */
 
-function giveProxyHandler(loaclData, localGate, fullPath, state) {
+function giveProxyHandler(localData, localGate, fullPath, state) {
   return {
     "set": function set(target, key, value) {
       // 处理特殊属性 [Gob Core]
@@ -5177,7 +5106,7 @@ function giveProxyHandler(loaclData, localGate, fullPath, state) {
       var nowFullPath = _toConsumableArray(fullPath).concat([key]);
 
       var handlerContext = {
-        loaclData: loaclData,
+        localData: localData,
         localGate: localGate,
         state: state
       };
@@ -5202,7 +5131,7 @@ function giveProxyHandler(loaclData, localGate, fullPath, state) {
       var nowFullPath = _toConsumableArray(fullPath).concat([key]);
 
       var handlerContext = {
-        loaclData: loaclData,
+        localData: localData,
         localGate: localGate,
         state: state
       };
@@ -5224,7 +5153,7 @@ function giveProxyHandler(loaclData, localGate, fullPath, state) {
       var nowFullPath = _toConsumableArray(fullPath).concat([key]);
 
       var handlerContext = {
-        loaclData: loaclData,
+        localData: localData,
         localGate: localGate,
         state: state
       };
@@ -5295,10 +5224,10 @@ var rcType = Util.rcType;
 
 function get(fullPath, key, handlerContext) {
   // 获取原始值
-  // let value = rcObject.getObjectValueByNames(loaclData, [key], null)
-  var value = handlerContext.loaclData[key];
+  // let value = rcObject.getObjectValueByNames(localData, [key], null)
+  var value = handlerContext.localData[key];
   console.log("[get]", fullPath, {
-    loaclData: handlerContext.loaclData,
+    localData: handlerContext.localData,
     key: key
   }); // 根据值属性处理读出值
 
@@ -5338,7 +5267,7 @@ function set(fullPath, value, key, handlerContext) {
 
   if (valueType === "object" || valueType === "array") {
     // 写入值到 data
-    handlerContext.loaclData[key] = value; // 创建 gate
+    handlerContext.localData[key] = value; // 创建 gate
 
     creatGate(value, [key], fullPath, handlerContext); // 遍历值来创建 gate
 
@@ -5348,7 +5277,7 @@ function set(fullPath, value, key, handlerContext) {
       }
     }, creatCycleGate);
   } else {
-    handlerContext.loaclData[key] = value;
+    handlerContext.localData[key] = value;
   }
 
   return true;
@@ -5406,7 +5335,7 @@ function del(fullPath, value, key, handlerContext) {
   console.log("[del]", "fullPath:", fullPath, {
     key: key
   });
-  return delete handlerContext.loaclData[key];
+  return delete handlerContext.localData[key];
 }
  //# sourceMappingURL=delete.js.map
 
@@ -5454,22 +5383,451 @@ function (_Abstract_Handler) {
 }(Abstract_Handler);
  //# sourceMappingURL=ProxyHandler.js.map
 
+function del$1() {}
+ //# sourceMappingURL=del.js.map
+
+function giveDefine(gobCore, parentData, parentGate, key, value, fullPath) {
+  var handlerContext = {
+    localData: parentData,
+    localGate: parentGate,
+    state: {
+      coreData: gobCore.data,
+      coreGate: gobCore.gate,
+      gobCore: gobCore,
+      GOB_CORE_NAME: GOB_CORE_NAME
+    }
+  };
+  var descriptor = {
+    enumerable: true,
+    configurable: true,
+    get: function get() {
+      // if (key == "$get") return $get
+      // if (key == "$set") return $set
+      // if (key == "$delete") return $delete
+      // if (key == "$core") return gobCore
+      return gobCore.stimuliBus.receptor({
+        type: "get",
+        path: fullPath,
+        value: undefined,
+        origin: null
+      }, handlerContext);
+    },
+    set: function set(newValue) {
+      return gobCore.stimuliBus.receptor({
+        type: "set",
+        path: fullPath,
+        value: newValue,
+        origin: null
+      }, handlerContext);
+    }
+  };
+  Object.defineProperty(parentGate, key, descriptor);
+  var parentPath;
+
+  if (!parentGate.$get) {
+    if (!parentPath) parentPath = fullPath.slice(0, fullPath.length - 1);
+    Object.defineProperty(parentGate, "$get", {
+      enumerable: false,
+      configurable: false,
+      get: function get() {
+        return function $get(inPath) {
+          var origin = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+          var path = Util.normalizePath(inPath);
+
+          var nowFullPath = _toConsumableArray(parentPath).concat(_toConsumableArray(path));
+
+          console.log("es5 $get", nowFullPath);
+          var re = gobCore.stimuliBus.receptor({
+            type: "get",
+            path: nowFullPath,
+            value: undefined,
+            origin: origin
+          });
+          console.log("es5 $get", {
+            nowFullPath: nowFullPath
+          }, {
+            re: re
+          });
+          return re;
+        };
+      }
+    });
+  }
+
+  if (!parentGate.$set) {
+    if (!parentPath) parentPath = fullPath.slice(0, fullPath.length - 1);
+    Object.defineProperty(parentGate, "$set", {
+      enumerable: false,
+      configurable: false,
+      get: function get() {
+        return function $set(inPath, value) {
+          var origin = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+          var path = Util.normalizePath(inPath);
+
+          var nowFullPath = _toConsumableArray(parentPath).concat(_toConsumableArray(path));
+
+          console.log("es5 $set", nowFullPath, value);
+          return gobCore.stimuliBus.receptor({
+            type: "set",
+            path: nowFullPath,
+            value: value,
+            origin: origin
+          });
+        };
+      }
+    });
+  }
+
+  if (!parentGate.$delete) {
+    if (!parentPath) parentPath = fullPath.slice(0, fullPath.length - 1);
+    Object.defineProperty(parentGate, "$delete", {
+      enumerable: false,
+      configurable: false,
+      get: function get() {
+        return function $delete(inPath) {
+          var origin = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+          var path = Util.normalizePath(inPath);
+
+          var nowFullPath = _toConsumableArray(parentPath).concat(_toConsumableArray(path));
+
+          var re = gobCore.stimuliBus.receptor({
+            type: "delete",
+            path: nowFullPath,
+            value: undefined,
+            origin: origin
+          });
+          console.log("es5 $delete", {
+            nowFullPath: nowFullPath
+          }, {
+            re: re
+          });
+          return re;
+        };
+      }
+    });
+  }
+
+  if (!parentGate.$core) {
+    Object.defineProperty(parentGate, "$core", {
+      enumerable: false,
+      configurable: false,
+      get: function get() {
+        return gobCore;
+      }
+    });
+  }
+}
+ //# sourceMappingURL=giveDefine.js.map
+
+var rcType$3 = Util.rcType;
+var rcObject$2 = Util.rcObject;
+/**
+ * 收到 set 刺激后对 gob 实例进行的操作
+ * @param {string[]} fullPath
+ * @param value
+ * @param {string} key
+ * @param {HandlerContext} handlerContext handler
+ */
+
+function set$1(fullPath, value, key, handlerContext) {
+  var valueType = rcType$3.getType(value);
+  console.log("[set]", "fullPath:", fullPath, {
+    valueType: valueType,
+    key: key,
+    value: value
+  });
+
+  if (valueType === "object" || valueType === "array") {
+    // 写入值到 data
+    handlerContext.localData[key] = value;
+    creatGate$1(value, [key], fullPath, handlerContext); // 遍历值来创建 gate
+
+    rcObject$2.pathEach(value, function (item, path) {
+      console.log("pathEach type:", _typeof(item), {
+        item: item,
+        path: path
+      });
+
+      if (shouldCreatGate(item)) {
+        creatGate$1(item, [key].concat(_toConsumableArray(path)), _toConsumableArray(fullPath).concat(_toConsumableArray(path)), handlerContext);
+      } else {
+        // definde
+        creatDefine(item, [key].concat(_toConsumableArray(path)), _toConsumableArray(fullPath).concat(_toConsumableArray(path)), handlerContext);
+      }
+    }, creatCycleGate);
+  } else {
+    handlerContext.localData[key] = value;
+  }
+
+  return true;
+}
+/**
+ * 为循环引用创建 Gate
+ * @param {Object} object 循环引用对象
+ * @param {string[]} path 发生循环引用的对象的 path
+ * @param {string[]} cyclePath 循环引用目标的 path
+ */
+
+
+function creatCycleGate(object, path, cyclePath) {}
+/**
+ * 在这个 Handler 的 localData 上根据 localPath 设置 Gate
+ * @param {object} inData
+ * @param {string[]} targetPath
+ * @param {string[]} fullPath
+ * @param handlerContext
+ * @returns {Gate}
+ */
+
+
+function creatGate$1(inData, targetPath, fullPath, handlerContext) {
+  console.log("creatGate", {
+    inData: inData,
+    targetPath: targetPath,
+    fullPath: fullPath,
+    handlerContext: handlerContext
+  });
+  var gobCore = handlerContext.state.gobCore;
+  var gate = {};
+  Object.defineProperty(gate, GATE_PROXY_NAME, {
+    enumerable: false,
+    configurable: true,
+    value: inData
+  });
+  var parentPath = targetPath.slice(0, targetPath.length - 1);
+  var key = targetPath[targetPath.length - 1];
+  var parent;
+
+  if (parentPath.length == 0) {
+    parent = handlerContext.localGate;
+  } else {
+    parent = rcObject$2.getObjectValueByNames(handlerContext.localGate, parentPath, null);
+  }
+
+  Object.defineProperty(parent, key, {
+    enumerable: true,
+    configurable: true,
+    get: function get() {
+      console.log("vGate get");
+      return gate;
+    },
+    set: function set(value) {
+      console.log("vGate set", value, {
+        handlerContext: handlerContext
+      });
+
+      if (shouldCreatGate(value)) {
+        handlerContext.localData[key] = value;
+        creatGate$1(value, targetPath, fullPath, handlerContext);
+        rcObject$2.pathEach(value, function (item, path) {
+          console.log("pathEach type:", _typeof(item), {
+            item: item,
+            path: path
+          });
+
+          if (shouldCreatGate(item)) {
+            creatGate$1(item, [key].concat(_toConsumableArray(path)), _toConsumableArray(fullPath).concat(_toConsumableArray(path)), handlerContext);
+          } else {
+            creatDefine(item, [key].concat(_toConsumableArray(path)), _toConsumableArray(fullPath).concat(_toConsumableArray(path)), handlerContext);
+          }
+        }, creatCycleGate);
+      } else {
+        gate = value;
+      }
+
+      handlerContext.localData[key] = value;
+      return true;
+    }
+  });
+  return gate;
+}
+
+function creatDefine(inData, targetPath, fullPath, handlerContext) {
+  var gobCore = handlerContext.state.gobCore;
+  var parentPath = targetPath.slice(0, targetPath.length - 1);
+  var key = targetPath[targetPath.length - 1];
+  console.log("creatDefine", {
+    inData: inData,
+    targetPath: targetPath,
+    fullPath: fullPath,
+    handlerContext: handlerContext,
+    key: key,
+    parentPath: parentPath
+  });
+  var parentGate = rcObject$2.getObjectValueByNames(handlerContext.localGate, parentPath, null);
+  var parentData = rcObject$2.getObjectValueByNames(handlerContext.localData, parentPath, null);
+  giveDefine(gobCore, parentData, parentGate, key, inData, fullPath);
+}
+
+function shouldCreatGate(value) {
+  if (_typeof(value) === "object") {
+    return true;
+  }
+
+  return false;
+}
+
+var rcType$4 = Util.rcType;
+
+function get$1(fullPath, key, handlerContext) {
+  // 获取原始值
+  // let value = rcObject.getObjectValueByNames(localData, [key], null)
+  var value = handlerContext.localData[key];
+  console.log("[Es5Handler get]", fullPath, {
+    localData: handlerContext.localData,
+    key: key
+  }); // 根据值属性处理读出值
+
+  var valueType = rcType$4.getType(value);
+  console.log("  [Es5Handler get value]", value, valueType);
+  console.log("  Es5Handler return value", value);
+  return value;
+}
+ //# sourceMappingURL=get.js.map
+
+var Es5Handler =
+/*#__PURE__*/
+function (_Abstract_Handler) {
+  _inherits(Es5Handler, _Abstract_Handler);
+
+  function Es5Handler() {
+    var _this;
+
+    _classCallCheck(this, Es5Handler);
+
+    _this = _possibleConstructorReturn(this, (Es5Handler.__proto__ || Object.getPrototypeOf(Es5Handler)).apply(this, arguments));
+    _this.delete = del$1;
+    _this.get = get$1;
+    _this.set = set$1;
+    return _this;
+  }
+
+  _createClass(Es5Handler, [{
+    key: "createGobProxy",
+    value: function createGobProxy(gobCore, initData) {
+      // 设置初始值
+      if (initData) {
+        for (var key in initData) {
+          giveDefine(gobCore, gobCore.data, gobCore.gate, key, initData[key], [key]);
+          gobCore.gate[key] = initData[key];
+        }
+      } else {
+        giveDefine(gobCore, gobCore.data, gobCore, "gate", {}, []);
+      }
+
+      return gobCore.gate;
+    }
+  }]);
+
+  return Es5Handler;
+}(Abstract_Handler);
+ //# sourceMappingURL=Es5Handler.js.map
+
+/**
+ * 刺激记录器
+ */
+
 var Recorder =
 /*#__PURE__*/
 function () {
   function Recorder(gobCore) {
     _classCallCheck(this, Recorder);
 
+    this.logs = {
+      changes: [],
+      visits: [],
+      indexes: {
+        set: 0,
+        get: 0,
+        delete: 0,
+        all: 0
+      },
+      latestPath: null,
+      latestType: null
+    };
     this.gobCore = gobCore;
   }
   /**
-   * 记录一次
+   * 记录一次 stimuli
+   * @param stimuli
    */
 
 
   _createClass(Recorder, [{
     key: "recOnce",
-    value: function recOnce() {}
+    value: function recOnce(stimuli) {
+      var _this = this;
+
+      // 如果禁用记录，则立即返回
+      if (this.gobCore.options.disableLog === true) {
+        return;
+      }
+
+      if (this.gobCore.options.logType) {
+        if (this.gobCore.options.logType[stimuli.type] === false) {
+          return;
+        }
+      } // 基本记录
+
+
+      this.logs.latestPath = Util.normalizePath(stimuli.path);
+      this.logs.latestType = stimuli.type;
+      var index = this.logs.indexes.all++;
+      var typeIndex = this.logs.indexes[stimuli.type]++; // 详细记录
+
+      if (this.gobCore.options.syncLog === true) {
+        // 同步记录
+        this._recStimuli(stimuli, index, typeIndex);
+      } else {
+        // 异步记录
+        setTimeout(function () {
+          _this._recStimuli(stimuli, index, typeIndex);
+        }, 0);
+      }
+    }
+    /**
+     * 实际生成记录并放入 logs
+     * @param stimuli
+     * @param index
+     * @param typeIndex
+     * @private
+     */
+
+  }, {
+    key: "_recStimuli",
+    value: function _recStimuli(stimuli, index, typeIndex) {
+      var logStimuli = {
+        type: stimuli.type,
+        path: Util.normalizePath(stimuli.path),
+        value: Util.cloneDeep(stimuli.value),
+        origin: Util.cloneDeep(stimuli.origin),
+        info: {
+          index: index,
+          typeIndex: typeIndex
+        }
+      }; // 判断保存的类型
+
+      if (stimuli.type === "set" || stimuli.type === "delete") {
+        this.logs.changes.push(logStimuli);
+      } else {
+        this.logs.visits.push(logStimuli);
+      }
+    }
+    /**
+     * 获取最后一次刺激的类型与路径
+     * @returns {{type: string | null; path: string[] | null} | undefined}
+     */
+
+  }, {
+    key: "getLatestStimuliInfo",
+    value: function getLatestStimuliInfo() {
+      if (this.logs.latestType) {
+        return {
+          type: this.logs.latestType,
+          path: this.logs.latestPath
+        };
+      }
+    }
   }]);
 
   return Recorder;
@@ -5495,9 +5853,14 @@ var GobCore = function GobCore() {
   this.data = {};
   this.gate = {};
   this.options = Object.assign({}, GobCore.DEFAULT_OPTIONS, options);
+  var useProxy = false;
 
-  {
+  if (useProxy) {
+    console.info("[use ProxyHandler]");
     this.handler = new ProxyHandler();
+  } else {
+    console.info("[use Es5Handler]");
+    this.handler = new Es5Handler();
   }
 }; // 默认参数
 
@@ -5542,6 +5905,7 @@ GobFactory.inspect = function (gob) {
     throw Error("[Gob] Gob.inspect: param is not Gob3 Instance. :" + gob);
   }
 };
+ //# sourceMappingURL=Core.js.map
 
 //# sourceMappingURL=index.js.map
 

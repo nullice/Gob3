@@ -4,7 +4,7 @@ import util from "@/Util/Util"
 
 let rcObject = util.rcObject
 
-import {GobState} from "@/Core/Handlers/ProxyHandler/sub/giveProxyHandler"
+import {GobState} from "@/Core/Handlers/Abstract.Handler.ts"
 import {FilterType} from "@/Core/FilterManager/FilterManager"
 import IgnoreSideEffect from "./ignore-side-effect"
 import stimuliFiltering from "./stimuli-filtering"
@@ -14,7 +14,7 @@ import {Filter} from "@/Core/FilterManager/FilterManager"
 
 export interface HandlerContext
 {
-    loaclData: any,
+    localData: any,
     localGate: any,
     state: GobState
 }

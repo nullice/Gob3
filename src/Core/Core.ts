@@ -5,6 +5,7 @@ import StimuliBus from "./StimuliBus/StimuliBus"
 import FilterManager from "./FilterManager/FilterManager"
 import {Abstract_Handler} from "@/Core/Handlers/Abstract.Handler"
 import ProxyHandler from "@/Core/Handlers/ProxyHandler/ProxyHandler"
+import Es5Handler from "@/Core/Handlers/Es5Handler/Es5Handler"
 import {GOB_CORE_NAME} from "./Core.consts"
 import Recorder from "@/Core/Recorder/Recorder"
 
@@ -15,8 +16,8 @@ import Recorder from "@/Core/Recorder/Recorder"
 * */
 export class GobCore
 {
-    public data: object
-    public gate: object
+    public data: any
+    public gate: any
     public proxy: any
     public options: GobOptions
     public stimuliBus = new StimuliBus(this)
@@ -31,14 +32,16 @@ export class GobCore
         this.gate = {}
         this.options = Object.assign({}, GobCore.DEFAULT_OPTIONS, options)
 
-
-        if (1 == 1)
+        let useProxy =false
+        if (useProxy)
         {
+            console.info("[use ProxyHandler]")
             this.handler = new ProxyHandler()
         }
         else
         {
-            this.handler = new ProxyHandler()
+            console.info("[use Es5Handler]")
+            this.handler = new Es5Handler()
         }
 
     }

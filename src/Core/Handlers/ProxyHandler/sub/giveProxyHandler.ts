@@ -1,41 +1,19 @@
 import {GobCore} from "@/Core/Core"
 import util from "@/Util/Util"
-
-export const GATE_PROXY_NAME = "[PROXY]"
-
-export interface Gate
-{
-    [GATE_PROXY_NAME]?: object
-
-    [propName: string]: any;
-}
-
-export interface GobState
-{
-    coreData: any,
-    coreGate: any,
-    gobCore: GobCore,
-    GOB_CORE_NAME: string
-}
+import {GobState, HandlerContext} from "./../../Abstract.Handler"
 
 
-export interface HandlerContext
-{
-    loaclData: any,
-    localGate: any,
-    state: GobState
-}
 
 /**
  * 创建一个基于 path 的代理处理器
- * @param loaclData
- * @param {string[]} loaclpath
+ * @param localData
+ * @param {string[]} localpath
  * @param {string[]} fullPath
  * @param {{gobCore: GobCore; GOB_CORE_NAME: string}} state
  * @returns {{set: (target: any, key: any, value: any) => boolean; get: (target: any, property: any) => (any)}}
  */
 
-function giveProxyHandler(loaclData: any, localGate: any, fullPath: string[], state: GobState)
+function giveProxyHandler(localData: any, localGate: any, fullPath: string[], state: GobState)
 {
 
     return {
@@ -48,7 +26,7 @@ function giveProxyHandler(loaclData: any, localGate: any, fullPath: string[], st
             }
 
             let nowFullPath = [...fullPath, key]
-            let handlerContext = {loaclData, localGate, state}
+            let handlerContext = {localData, localGate, state}
             return state.gobCore.stimuliBus.receptor({type: "set", path: nowFullPath, value: value, origin: null}, handlerContext)
 
         },
@@ -67,7 +45,7 @@ function giveProxyHandler(loaclData: any, localGate: any, fullPath: string[], st
 
 
             let nowFullPath = [...fullPath, key]
-            let handlerContext = {loaclData, localGate, state}
+            let handlerContext = {localData, localGate, state}
 
             return state.gobCore.stimuliBus.receptor({type: "get", path: nowFullPath, value: undefined, origin: null}, handlerContext)
         },
@@ -81,7 +59,7 @@ function giveProxyHandler(loaclData: any, localGate: any, fullPath: string[], st
             }
             console.log("called: " + key)
             let nowFullPath = [...fullPath, key]
-            let handlerContext = {loaclData, localGate, state}
+            let handlerContext = {localData, localGate, state}
 
             return state.gobCore.stimuliBus.receptor( {type: "delete", path: nowFullPath, value: null, origin: null}, handlerContext)
 

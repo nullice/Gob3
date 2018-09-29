@@ -1,9 +1,7 @@
 import util from "@/Util/Util"
 let rcType = util.rcType
 
-
-import giveProxyHandler, {HandlerContext, Gate, GATE_PROXY_NAME} from "src/Core/Handlers/ProxyHandler/sub/giveProxyHandler"
-
+import {HandlerContext} from "./../../Abstract.Handler"
 
 /**
  * 收到 delete 刺激后对 gob 实例进行的操作
@@ -16,7 +14,7 @@ function del(fullPath: string[], value: any, key: string, handlerContext: Handle
 {
     let valueType = rcType.getType(value)
     console.log("[del]", "fullPath:", fullPath, { key})
-    return delete handlerContext.loaclData[key]
+    return delete handlerContext.localData[key]
 }
 
 
